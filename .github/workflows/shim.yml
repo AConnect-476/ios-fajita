@@ -2,6 +2,10 @@ name: fajita-shim
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["xnu"]
+    types: [completed]
+    branches: [wcn3990-sdm845-port]
   push:
     branches: [wcn3990-sdm845-port]
     paths:
@@ -19,18 +23,25 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Find latest successful XNU build for this branch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          runs=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${GITHUB_REF_NAME}&per_page=100")
-          run_id=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.name == "xnu" and .conclusion == "success")][0].id // empty')
-          run_sha=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.name == "xnu" and .conclusion == "success")][0].head_sha // empty')
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_run" ]; then
+            run_id="${{ github.event.workflow_run.id }}"
+            run_sha="${{ github.event.workflow_run.head_sha }}"
+          else
+            runs=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${GITHUB_REF_NAME}&per_page=100")
+            run_id=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.name == "xnu" and .conclusion == "success")][0].id // empty')
+            run_sha=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.name == "xnu" and .conclusion == "success")][0].head_sha // empty')
+          fi
           if [ -z "$run_id" ]; then
             echo "::error::No successful XNU build exists for this branch yet."
             exit 1
