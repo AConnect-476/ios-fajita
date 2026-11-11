@@ -82,7 +82,7 @@ jobs:
           split -b 4G -d -a 2 "$RUNNER_TEMP/ios16-root-20H392.img" "$RUNNER_TEMP/root-part-"
           ls -lh "$RUNNER_TEMP"/root-part-*
           test "$(find "$RUNNER_TEMP" -maxdepth 1 -name 'root-part-*' -type f | wc -l)" -eq 4
-          cp "$RUNNER_TEMP/ios16-root-20H392.img.sha256" "$RUNNER_TEMP/"
+          # Checksum is already in RUNNER_TEMP; no copy needed.
 
       - name: Upload root image part 00
         uses: actions/upload-artifact@v4
