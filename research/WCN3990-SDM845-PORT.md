@@ -1,6 +1,6 @@
 # WCN3990 / SDM845 Wi-Fi port notes (OnePlus 6T)
 
-Status: hardware discovery and firmware inventory completed. A read-only ADT probe and ADT metadata node are committed on this branch; XNU CI is validating the patch. No modem or Wi-Fi hardware has been started.
+Status: hardware discovery and firmware inventory completed. The read-only WCN3990/GLINK/ADSP probe and the later modem-Q6 metadata probe both passed XNU CI. The read-only modem_a UFS reader and firmware-header checks are in the next CI build. No modem or Wi-Fi hardware has been started.
 
 This document is specific to `fajita` (OnePlus 6T, SDM845). Do not apply the `ios-topaz` Wi-Fi patches unchanged: that port targets SM6225 and its hard-coded modem/WLAN memory layout does not match this device.
 
@@ -63,7 +63,7 @@ The Topaz patch series is still useful as a protocol reference for PAS, SMEM/SMP
 ## Implementation order
 
 1. **Implemented on this branch:** `tools/mkadt.py` adds WCN3990, modem-transport, modem-Q6 and ADSP metadata from the live fajita DT. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware.
-2. **Implemented on this branch:** patch `0216-fajita-ufs-readonly-modem-partition.patch` adds read-only GPT lookup across UFS LUNs 0–5 and `sweet_ufs_read_part()`. Patch 0215 now reads the first four bytes of `modem.mdt`, `mba.mbn`, `adsp.mdt`, `wlanmdsp.mbn` and `bdwlan.bin` from their verified offsets, so the first boot log can validate the LUN4 firmware path without loading or starting any coprocessor. Both patch files pass the local hunk-count check; the latest XNU CI build is pending.
+2. **Implemented on this branch:** patch `0216-fajita-ufs-readonly-modem-partition.patch` adds read-only GPT lookup across UFS LUNs 0–5 and `sweet_ufs_read_part()`. Patch 0215 now reads the first four bytes of `modem.mdt`, `mba.mbn`, `adsp.mdt`, `wlanmdsp.mbn` and `bdwlan.bin` from their verified offsets, so the first boot log can validate the LUN4 firmware path without loading or starting any coprocessor. Both patch files pass the local hunk-count check; the latest CI build is compiling the UFS reader and firmware-header checks.
 3. Use the verified partition-relative extents in `research/fajita-modem-a-extents.json` to read the complete `mba.mbn`, `modem.mdt`, `modem.bNN`, `adsp.mdt`, `adsp.bNN`, WLAN firmware and PD descriptors.
 3. Implement the OnePlus MBA self-auth modem boot path: MBA firmware load, Q6/RMB handshake, memory assignment to VMID 15, AOP signalling and the Q6 reset sequence. Do not use Topaz's direct PAS-ID-4 flow.
 4. Bring up ADSP and modem service registration, then implement SMEM, SMP2P, GLINK and QRTR using the live SDM845 IRQ register/mask and handshakes.
