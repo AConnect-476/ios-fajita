@@ -22,7 +22,11 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 - ADSP reserved region: `0x8c500000`, size `0x01a00000`.
 - Modem GLINK transport uses the same SMEM region plus IRQ register `0x1799000c` (4 bytes), doorbell mask `0x00100000`, GIC SPI 449.
 - SMP2P uses register `0x1799000c` (4 bytes), GIC SPI 451, remote PID 1 and IRQ bitmask `0x4`.
-- The ADSP PAS ID is 1 in the SDM845 PAS driver. The live modem node has no `qcom,pas-id` property, so the modem PAS ID must be confirmed from the exact downstream loader rather than copied from Topaz.
+- The live modem node has `qcom,pil-self-auth`, `qcom,qdsp6v65-1-0`, `qcom,mem-protect-id = 15`, `qcom,signal-aop`, `qcom,mss_pdc_offset = 9`, and `qcom,ssctl-instance-id = 18`. It has no `qcom,pas-id` property. This is the MBA self-auth path, not the direct PAS-ID-4 path used by Topaz; do not copy Topaz's modem boot sequence.
+- Live modem clocks: `clock-names = xo, iface_clk, bus_clk, mem_clk, gpll0_mss_clk, snoc_axi_clk, mnoc_axi_clk, prng_clk`; active clocks are `iface_clk, bus_clk, mem_clk, gpll0_mss_clk, snoc_axi_clk, mnoc_axi_clk`; proxy clocks are `xo, prng_clk`.
+- Live `vdd_cx-voltage`, `vdd_mx-uV` and `vdd_mss-uV` properties each contain the raw value `385`. The Linux driver passes these to regulator APIs as voltage values, but that raw value is unusual; do not translate or vote these rails until the units/provider behavior are verified.
+- QDSP6 v65 boot-FSM registers from the Android 11 downstream driver: Q6 sleep `q6_base + 0x3c`, boot-core-start `q6_base + 0x400`, boot command `q6_base + 0x404`, and MBA status `rmb_base + 0x40`.
+- The ADSP PAS ID is 1 in the SDM845 PAS driver; the live modem node does not expose a modem PAS ID.
 
 The upstream SDM845 DTS instead describes the modem/MBA reserved regions as `0x8e000000` / `0x96500000`; use the live fajita DT for final addresses. The live downstream DTS must win over generic upstream defaults.
 
