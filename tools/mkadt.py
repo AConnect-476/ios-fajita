@@ -44,6 +44,11 @@ WLAN_INTERRUPTS = tuple(x for irq in range(414, 426) for x in (0, irq, 0))
 SMEM, SMEM_SIZE = 0x86000000, 0x00200000
 MODEM, MODEM_SIZE = 0x8e000000, 0x07800000
 MBA, MBA_SIZE = 0x96600000, 0x00200000
+ADSP, ADSP_SIZE = 0x8c500000, 0x01a00000
+GLINK_IRQ_REG, GLINK_IRQ_REG_SIZE = 0x1799000c, 0x4
+GLINK_IRQ_MASK, GLINK_IRQ = 0x00100000, 449
+SMP2P_REG, SMP2P_REG_SIZE = 0x1799000c, 0x4
+SMP2P_IRQ, SMP2P_REMOTE_PID, SMP2P_IRQ_BITMASK = 451, 1, 4
 TIMEBASE = 19200000
 VTIMER_INTID = 19
 # QEMU virt (-M virt,gic-version=3 -cpu cortex-a76): GICD/GICR and the generic timer's CNTFRQ
@@ -276,6 +281,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('smem-hwlock-id', u32(3)),
         ('modem-reg', u64(MODEM, MODEM_SIZE)),
         ('mba-reg', u64(MBA, MBA_SIZE)),
+        ('adsp-reg', u64(ADSP, ADSP_SIZE)),
     ], [node('pmu', [
         ph(),
         ('compatible', cstr('qcom,wcn3990-pmu')),
@@ -288,6 +294,26 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('vddch1-microvolt', u32(3300000)),
     ])])
 
+    # SDM845 modem transport and ADSP carveout, captured from the live fajita DT.
+    modem_transport = node('modem-transport', [
+        ph(),
+        ('compatible', cstr('qcom,glink-smem-native-xprt') + cstr('qcom,smp2p')),
+        ('smem-reg', u64(SMEM, SMEM_SIZE)),
+        ('glink-irq-reg', u64(GLINK_IRQ_REG, GLINK_IRQ_REG_SIZE)),
+        ('glink-irq-mask', u32(GLINK_IRQ_MASK)),
+        ('glink-interrupts', u32(0, GLINK_IRQ, 1)),
+        ('smp2p-reg', u64(SMP2P_REG, SMP2P_REG_SIZE)),
+        ('smp2p-interrupts', u32(0, SMP2P_IRQ, 1)),
+        ('smp2p-remote-pid', u32(SMP2P_REMOTE_PID)),
+        ('smp2p-irq-bitmask', u32(SMP2P_IRQ_BITMASK)),
+        ('modem-reg', u64(MODEM, MODEM_SIZE)),
+        ('mba-reg', u64(MBA, MBA_SIZE)),
+        ('adsp-reg', u64(ADSP, ADSP_SIZE)),
+        ('adsp-pas-id', u32(1)),
+        ('modem-firmware-stem', cstr('modem')),
+        ('adsp-firmware-stem', cstr('adsp')),
+    ])
+
     arm_io = node('arm-io', [
         ph(),
         ('device_type', cstr('sweet-io')),
@@ -295,7 +321,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('#address-cells', u32(2)),
         ('#size-cells', u32(2)),
         ('ranges', u64(0, SOC_BASE, 0x100000000 - SOC_BASE)),
-    ], [gic, wcn,
+    ], [gic, wcn, modem_transport,
         # No hardware: watchdogd checks IODeviceTree:/arm-io/wdt for no-pmu and
         # otherwise crashes trying to set the PMU boot stage (customer builds
         # ignore the -wdt_no_pmu boot-arg).
