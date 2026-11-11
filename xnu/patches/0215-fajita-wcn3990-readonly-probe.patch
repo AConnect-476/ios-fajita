@@ -1,0 +1,125 @@
+diff --git a/bsd/dev/sweet_wcn3990.c b/bsd/dev/sweet_wcn3990.c
+new file mode 100644
+--- /dev/null
++++ b/bsd/dev/sweet_wcn3990.c
+@@ -0,0 +1,95 @@
++/*
++ * Read-only WCN3990 discovery for the OnePlus 6T (SDM845 / fajita).
++ *
++ * This first milestone deliberately does not map MMIO, start the modem,
++ * change PMU rails, or assign secure-memory permissions. It verifies that
++ * mkadt.py passed the live hardware description to XNU before any driver
++ * bring-up is attempted.
++ */
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <sys/param.h>
++#include <sys/systm.h>
++#include <pexpert/pexpert.h>
++#include <pexpert/device_tree.h>
++
++void
++sweet_wcn3990_probe(void)
++{
++	DTEntry node, pmu;
++	uintptr_t const *reg = NULL, *msa = NULL, *smem = NULL;
++	uintptr_t const *modem = NULL, *mba = NULL;
++	uint32_t const *irqs = NULL, *sid = NULL, *hwlock = NULL, *gpio = NULL;
++	const char *variant = NULL;
++	unsigned int size = 0;
++
++	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990", &node) != kSuccess) {
++		printf("SWEET WLAN: no /arm-io/wcn3990 ADT node\n");
++		return;
++	}
++
++	if (SecureDTGetProperty(node, "reg", (void const **)&reg, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET WLAN: WCN3990 register window %#llx + %#llx\n",
++		    (uint64_t)reg[0], (uint64_t)reg[1]);
++	} else {
++		printf("SWEET WLAN: missing/short reg property\n");
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "msa-reg", (void const **)&msa, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET WLAN: MSA reserved memory %#llx + %#llx\n",
++		    (uint64_t)msa[0], (uint64_t)msa[1]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "smem-reg", (void const **)&smem, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET WLAN: shared SMEM %#llx + %#llx\n",
++		    (uint64_t)smem[0], (uint64_t)smem[1]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "modem-reg", (void const **)&modem, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET WLAN: modem carveout %#llx + %#llx\n",
++		    (uint64_t)modem[0], (uint64_t)modem[1]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "mba-reg", (void const **)&mba, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET WLAN: MBA carveout %#llx + %#llx\n",
++		    (uint64_t)mba[0], (uint64_t)mba[1]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "interrupts", (void const **)&irqs, &size) == kSuccess &&
++	    size >= 3 * sizeof(uint32_t) && size % (3 * sizeof(uint32_t)) == 0) {
++		unsigned int count = size / (3 * sizeof(uint32_t));
++		printf("SWEET WLAN: %u GIC interrupt specifiers, first SPI %u, last SPI %u\n",
++		    count, irqs[1], irqs[3 * (count - 1) + 1]);
++	} else {
++		printf("SWEET WLAN: missing/invalid interrupt specifiers\n");
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "iommu-stream-id", (void const **)&sid, &size) == kSuccess &&
++	    size >= sizeof(uint32_t)) {
++		printf("SWEET WLAN: IOMMU stream ID %#x\n", sid[0]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "smem-hwlock-id", (void const **)&hwlock, &size) == kSuccess &&
++	    size >= sizeof(uint32_t)) {
++		printf("SWEET WLAN: SMEM hardware lock %u\n", hwlock[0]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "calibration-variant", (void const **)&variant, &size) == kSuccess &&
++	    size != 0) {
++		printf("SWEET WLAN: calibration variant %s\n", variant);
++	}
++
++	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990/pmu", &pmu) == kSuccess) {
++		size = 0;
++		if (SecureDTGetProperty(pmu, "switch-control-gpio", (void const **)&gpio, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET WLAN: PMU switch-control GPIO %u (not changed)\n", gpio[0]);
++		}
++	}
++	printf("SWEET WLAN: discovery complete; no MMIO access or hardware changes\n");
++}
++#endif /* ARM64_BOARD_CONFIG_SWEET */
++
+diff --git a/bsd/conf/files b/bsd/conf/files
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -111,5 +111,6 @@
+ bsd/dev/sweet_rpmh.c			standard
+ bsd/dev/sweet_spmi.c			standard
+ bsd/dev/sweet_usb.c			standard
+ bsd/dev/sweet_gpu.c			standard
++bsd/dev/sweet_wcn3990.c		standard
+ bsd/dev/mem.c				standard
+diff --git a/bsd/dev/sweet_ufs.c b/bsd/dev/sweet_ufs.c
+--- a/bsd/dev/sweet_ufs.c
++++ b/bsd/dev/sweet_ufs.c
+@@ -54,6 +54,7 @@
+ extern void sweet_touch_init(void);
+ extern void sweet_gpu_probe(void);
++extern void sweet_wcn3990_probe(void);
+ extern void sweet_usb_probe(void);
+@@ -662,6 +663,7 @@
+ 	sweet_keys_init();
+ 	sweet_touch_init();
+ 	sweet_gpu_probe();
++	sweet_wcn3990_probe();
+ 	sweet_usb_probe();
