@@ -2,7 +2,7 @@ diff --git a/bsd/dev/sweet_wcn3990.c b/bsd/dev/sweet_wcn3990.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/sweet_wcn3990.c
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,100 @@
 +/*
 + * Read-only WCN3990 discovery for the OnePlus 6T (SDM845 / fajita).
 + *
@@ -25,7 +25,7 @@ new file mode 100644
 +	uintptr_t const *modem = NULL, *mba = NULL;
 +	uint32_t const *irqs = NULL, *sid = NULL, *hwlock = NULL, *gpio = NULL;
 +	const char *variant = NULL;
-	void const *quirk = NULL;
++	void const *quirk = NULL;
 +	unsigned int size = 0;
 +
 +	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990", &node) != kSuccess) {
@@ -88,13 +88,12 @@ new file mode 100644
 +	    size != 0) {
 +		printf("SWEET WLAN: calibration variant %s\n", variant);
 +	}
-+
 +	size = 0;
-	if (SecureDTGetProperty(node, "snoc-host-cap-8bit-quirk", &quirk, &size) == kSuccess) {
-		printf("SWEET WLAN: SNOC 8-bit host-capability quirk present\\n");
-	}
-
-	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990/pmu", &pmu) == kSuccess) {
++	if (SecureDTGetProperty(node, "snoc-host-cap-8bit-quirk", &quirk, &size) == kSuccess) {
++		printf("SWEET WLAN: SNOC 8-bit host-capability quirk present\n");
++	}
++
++	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990/pmu", &pmu) == kSuccess) {
 +		size = 0;
 +		if (SecureDTGetProperty(pmu, "swctrl-gpio", (void const **)&gpio, &size) == kSuccess &&
 +		    size >= sizeof(uint32_t)) {
@@ -104,7 +103,6 @@ new file mode 100644
 +	printf("SWEET WLAN: discovery complete; no MMIO access or hardware changes\n");
 +}
 +#endif /* ARM64_BOARD_CONFIG_SWEET */
-+
 diff --git a/bsd/conf/files b/bsd/conf/files
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
