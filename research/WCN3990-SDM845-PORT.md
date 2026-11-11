@@ -11,7 +11,8 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 - WCN3990/SNoC register window: `0x18800000`, size `0x00800000`.
 - Twelve CE interrupts: GIC SPIs 414 through 425.
 - IOMMU stream ID: `0x40`.
-- WLAN firmware/MSA reserved memory: `0x8df00000`, size `0x00100000`.
+- WLAN firmware reserved region: `0x8df00000`, size `0x00100000`.
+- Separate live `qcom,wlan-msa-memory` property: `0x1000` (4096); this is not the reserved-region address/size.
 - The WLAN node is `qcom,icnss` in the downstream live DT (not the upstream `qcom,wcn3990-wifi` compatible).
 - The OnePlus DTS sets `qcom,calibration-variant = "oneplus_sdm845"` and the `qcom,snoc-host-cap-8bit-quirk` flag. Both are represented in the generated Apple DT.
 - PMU node: `wcn3990-pmu`; its switch-control line is PM8998 GPIO3. The OnePlus common DTS supplies 0.8 V CX/MX, 1.8 V XO, 1.3 V RF, and two 3.3 V channel rails.
@@ -54,7 +55,7 @@ The Topaz patch series is still useful as a protocol reference for PAS, SMEM/SMP
 
 ## Implementation order
 
-1. **Implemented on this branch:** `tools/mkadt.py` now adds WCN3990, modem-transport and ADSP metadata from the live fajita DT. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; the corrected patch is awaiting XNU CI.
+1. **Implemented on this branch:** `tools/mkadt.py` now adds WCN3990, WLAN firmware-region/MSA-size, modem-transport and ADSP metadata from the live fajita DT. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; the corrected patch is awaiting XNU CI.
 2. Implement SDM845 modem and ADSP PAS startup using the actual reserved-memory carveouts, device-specific `.mdt`/`.bNN` firmware and TrustZone SCM ABI. The live modem DT does not expose a PAS ID; do not assume the Topaz value.
 3. Implement SMEM, SMP2P, GLINK and QRTR using the live SDM845 IRQ register/mask and handshakes.
 4. Start ADSP and modem before PD mapping. Use the device's own `.jsn` descriptors and verify the `wlan_pd` service is published.
