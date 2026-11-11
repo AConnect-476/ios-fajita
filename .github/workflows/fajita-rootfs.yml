@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake git libfuse-dev libicu-dev libattr1-dev \
+            build-essential cmake git libfuse3-dev libicu-dev libattr1-dev \
             zlib1g-dev libbz2-dev liblz4-dev libzstd-dev hfsprogs rsync \
             unzip curl ca-certificates python3
 
