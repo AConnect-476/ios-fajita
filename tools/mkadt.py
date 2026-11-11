@@ -37,6 +37,13 @@ SWEET_ECID = 0x5357454554000001  # 'SWEET' + 1, synthetic
 FB_W, FB_H, FB_STRIDE = 1080, 2340, 1080 * 4
 # Internal UFS host (ufshc@1d84000 "ufs_mem"); QEMU virt has none
 UFS, UFS_SIZE = 0x01d84000, 0x3000
+# WCN3990 / ICNSS on the OnePlus 6T (values read from the live fajita DT).
+WLAN, WLAN_SIZE = 0x18800000, 0x00800000
+WLAN_MSA, WLAN_MSA_SIZE = 0x8df00000, 0x00100000
+WLAN_INTERRUPTS = tuple(range(414, 426))
+SMEM, SMEM_SIZE = 0x86000000, 0x00200000
+MODEM, MODEM_SIZE = 0x8e000000, 0x07800000
+MBA, MBA_SIZE = 0x96600000, 0x00200000
 TIMEBASE = 19200000
 VTIMER_INTID = 19
 # QEMU virt (-M virt,gic-version=3 -cpu cortex-a76): GICD/GICR and the generic timer's CNTFRQ
@@ -261,7 +268,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('#address-cells', u32(2)),
         ('#size-cells', u32(2)),
         ('ranges', u64(0, SOC_BASE, 0x100000000 - SOC_BASE)),
-    ], [gic,
+    ], [gic, wcn,
         # No hardware: watchdogd checks IODeviceTree:/arm-io/wdt for no-pmu and
         # otherwise crashes trying to set the PMU boot stage (customer builds
         # ignore the -wdt_no_pmu boot-arg).
@@ -292,6 +299,32 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('compatible', cstr('qcom,ufshc')),
         ('reg', u64(UFS, UFS_SIZE)),
     ])
+
+    # WCN3990: discovery metadata only; the first kernel milestone never maps
+    # or writes the WLAN/SMEM/modem registers.
+    wcn = node('wcn3990', [
+        ph(),
+        ('compatible', cstr('qcom,icnss') + cstr('qcom,wcn3990-wifi')),
+        ('reg', u64(WLAN, WLAN_SIZE)),
+        ('msa-reg', u64(WLAN_MSA, WLAN_MSA_SIZE)),
+        ('interrupts', u32(*WLAN_INTERRUPTS)),
+        ('iommus', u32(0x40)),
+        ('calibration-variant', cstr('oneplus_sdm845')),
+        ('smem-reg', u64(SMEM, SMEM_SIZE)),
+        ('smem-hwlock-id', u32(3)),
+        ('modem-reg', u64(MODEM, MODEM_SIZE)),
+        ('mba-reg', u64(MBA, MBA_SIZE)),
+    ], [node('pmu', [
+        ph(),
+        ('compatible', cstr('qcom,wcn3990-pmu')),
+        ('switch-control-gpio', u32(3)),
+        ('vdd-cx-mx-microvolt', u32(800000)),
+        ('vddio-microvolt', u32(1800000)),
+        ('vddxo-microvolt', u32(1800000)),
+        ('vddrf-microvolt', u32(1304000)),
+        ('vddch0-microvolt', u32(3300000)),
+        ('vddch1-microvolt', u32(3300000)),
+    ])])
 
     # pmap_compute_max_asids requires the node even when no overrides are set.
     # An absent pmap-max-asids property selects XNU's own MAX_ASIDS default.
