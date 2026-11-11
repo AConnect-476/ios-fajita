@@ -46,9 +46,9 @@ MODEM, MODEM_SIZE = 0x8e000000, 0x07800000
 MBA, MBA_SIZE = 0x96600000, 0x00200000
 ADSP, ADSP_SIZE = 0x8c500000, 0x01a00000
 GLINK_IRQ_REG, GLINK_IRQ_REG_SIZE = 0x1799000c, 0x4
-GLINK_IRQ_MASK, GLINK_IRQ = 0x00100000, 449
+GLINK_IRQ_MASK, GLINK_IRQ = 0x00001000, 449
 SMP2P_REG, SMP2P_REG_SIZE = 0x1799000c, 0x4
-SMP2P_IRQ, SMP2P_REMOTE_PID, SMP2P_IRQ_BITMASK = 451, 1, 4
+SMP2P_IRQ, SMP2P_REMOTE_PID, SMP2P_IRQ_BITMASK = 451, 1, 0x4000
 MODEM_Q6, MODEM_Q6_SIZE = 0x04080000, 0x00010000
 MODEM_HALT_Q6, MODEM_HALT_MODEM, MODEM_HALT_NC = 0x01f63000, 0x01f65000, 0x01f64000
 MODEM_RMB, MODEM_RMB_SIZE = 0x04180000, 0x20
@@ -277,46 +277,38 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('compatible', cstr('qcom,icnss') + cstr('qcom,wcn3990-wifi')),
         ('reg', u64(WLAN, WLAN_SIZE)),
         ('wlan-fw-reg', u64(WLAN_FW, WLAN_FW_SIZE)),
-        ('wlan-msa-memory', u32(0x1000)),
+        ('wlan-msa-memory', u32(0x100000)),
         ('interrupts', u32(*WLAN_INTERRUPTS)),
         ('iommu-stream-id', u32(0x40)),
         ('calibration-variant', cstr('oneplus_sdm845')),
         ('snoc-host-cap-8bit-quirk', b''),
+        ('smmu-s1-bypass', b''),
+        ('vdd-0.8-cx-mx-config', u32(800000, 800000)),
+        ('vdd-3.3-ch0-config', u32(3104000, 3312000)),
         ('smem-reg', u64(SMEM, SMEM_SIZE)),
         ('smem-hwlock-id', u32(3)),
         ('modem-reg', u64(MODEM, MODEM_SIZE)),
         ('mba-reg', u64(MBA, MBA_SIZE)),
         ('adsp-reg', u64(ADSP, ADSP_SIZE)),
-    ], [node('pmu', [
-        ph(),
-        ('compatible', cstr('qcom,wcn3990-pmu')),
-        ('swctrl-gpio', u32(3)),
-        ('vdd-cx-mx-microvolt', u32(800000)),
-        ('vddio-microvolt', u32(1800000)),
-        ('vddxo-microvolt', u32(1800000)),
-        ('vddrf-microvolt', u32(1304000)),
-        ('vddch0-microvolt', u32(3300000)),
-        ('vddch1-microvolt', u32(3300000)),
-    ])])
+    ])
 
-    # SDM845 modem transport and ADSP carveout, captured from the live fajita DT.
-    modem_transport = node('modem-transport', [
+    # SDM845 modem transports are separate hardware nodes in the live DT.
+    glink_modem = node('glink-modem', [
         ph(),
-        ('compatible', cstr('qcom,glink-smem-native-xprt') + cstr('qcom,smp2p')),
+        ('compatible', cstr('qcom,glink-smem-native-xprt')),
         ('smem-reg', u64(SMEM, SMEM_SIZE)),
         ('glink-irq-reg', u64(GLINK_IRQ_REG, GLINK_IRQ_REG_SIZE)),
         ('glink-irq-mask', u32(GLINK_IRQ_MASK)),
-        ('glink-interrupts', u32(0, GLINK_IRQ, 1)),
-        ('smp2p-reg', u64(SMP2P_REG, SMP2P_REG_SIZE)),
-        ('smp2p-interrupts', u32(0, SMP2P_IRQ, 1)),
-        ('smp2p-remote-pid', u32(SMP2P_REMOTE_PID)),
-        ('smp2p-irq-bitmask', u32(SMP2P_IRQ_BITMASK)),
-        ('modem-reg', u64(MODEM, MODEM_SIZE)),
-        ('mba-reg', u64(MBA, MBA_SIZE)),
-        ('adsp-reg', u64(ADSP, ADSP_SIZE)),
-        ('adsp-pas-id', u32(1)),
-        ('modem-firmware-stem', cstr('modem')),
-        ('adsp-firmware-stem', cstr('adsp')),
+        ('interrupts', u32(0, GLINK_IRQ, 1)),
+        ('label', cstr('mpss')),
+    ])
+    smp2p_modem = node('smp2p-modem', [
+        ph(),
+        ('compatible', cstr('qcom,smp2p')),
+        ('reg', u64(SMP2P_REG, SMP2P_REG_SIZE)),
+        ('interrupts', u32(0, SMP2P_IRQ, 1)),
+        ('remote-pid', u32(SMP2P_REMOTE_PID)),
+        ('irq-bitmask', u32(SMP2P_IRQ_BITMASK)),
     ])
 
     modem_q6 = node('modem-q6', [
@@ -334,7 +326,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('modem-reg', u64(MODEM, MODEM_SIZE)),
         ('mba-reg', u64(MBA, MBA_SIZE)),
         ('self-auth', b''),
-        ('vmid', u32(15)),
+        ('mem-protect-id', u32(15)),
         ('qdsp6v65-1-0', b''),
         ('signal-aop', b''),
         ('mailbox-channel', u32(0)),
@@ -349,7 +341,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('#address-cells', u32(2)),
         ('#size-cells', u32(2)),
         ('ranges', u64(0, SOC_BASE, 0x100000000 - SOC_BASE)),
-    ], [gic, wcn, modem_transport, modem_q6,
+    ], [gic, wcn, glink_modem, smp2p_modem, modem_q6,
         # No hardware: watchdogd checks IODeviceTree:/arm-io/wdt for no-pmu and
         # otherwise crashes trying to set the PMU boot stage (customer builds
         # ignore the -wdt_no_pmu boot-arg).
