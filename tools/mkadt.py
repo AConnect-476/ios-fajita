@@ -261,6 +261,32 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('virtual-timer-intid', u32(QEMU_VTIMER_INTID if qemu else VTIMER_INTID)),
         ('reg', u64(gicd - SOC_BASE, GICD_SIZE, gicr - SOC_BASE, GICR_SIZE)),
     ])
+    # WCN3990: discovery metadata only; the first kernel milestone never maps
+    # or writes the WLAN/SMEM/modem registers.
+    wcn = node('wcn3990', [
+        ph(),
+        ('compatible', cstr('qcom,icnss') + cstr('qcom,wcn3990-wifi')),
+        ('reg', u64(WLAN, WLAN_SIZE)),
+        ('msa-reg', u64(WLAN_MSA, WLAN_MSA_SIZE)),
+        ('interrupts', u32(*WLAN_INTERRUPTS)),
+        ('iommus', u32(0x40)),
+        ('calibration-variant', cstr('oneplus_sdm845')),
+        ('smem-reg', u64(SMEM, SMEM_SIZE)),
+        ('smem-hwlock-id', u32(3)),
+        ('modem-reg', u64(MODEM, MODEM_SIZE)),
+        ('mba-reg', u64(MBA, MBA_SIZE)),
+    ], [node('pmu', [
+        ph(),
+        ('compatible', cstr('qcom,wcn3990-pmu')),
+        ('switch-control-gpio', u32(3)),
+        ('vdd-cx-mx-microvolt', u32(800000)),
+        ('vddio-microvolt', u32(1800000)),
+        ('vddxo-microvolt', u32(1800000)),
+        ('vddrf-microvolt', u32(1304000)),
+        ('vddch0-microvolt', u32(3300000)),
+        ('vddch1-microvolt', u32(3300000)),
+    ])])
+
     arm_io = node('arm-io', [
         ph(),
         ('device_type', cstr('sweet-io')),
@@ -300,31 +326,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('reg', u64(UFS, UFS_SIZE)),
     ])
 
-    # WCN3990: discovery metadata only; the first kernel milestone never maps
-    # or writes the WLAN/SMEM/modem registers.
-    wcn = node('wcn3990', [
-        ph(),
-        ('compatible', cstr('qcom,icnss') + cstr('qcom,wcn3990-wifi')),
-        ('reg', u64(WLAN, WLAN_SIZE)),
-        ('msa-reg', u64(WLAN_MSA, WLAN_MSA_SIZE)),
-        ('interrupts', u32(*WLAN_INTERRUPTS)),
-        ('iommus', u32(0x40)),
-        ('calibration-variant', cstr('oneplus_sdm845')),
-        ('smem-reg', u64(SMEM, SMEM_SIZE)),
-        ('smem-hwlock-id', u32(3)),
-        ('modem-reg', u64(MODEM, MODEM_SIZE)),
-        ('mba-reg', u64(MBA, MBA_SIZE)),
-    ], [node('pmu', [
-        ph(),
-        ('compatible', cstr('qcom,wcn3990-pmu')),
-        ('switch-control-gpio', u32(3)),
-        ('vdd-cx-mx-microvolt', u32(800000)),
-        ('vddio-microvolt', u32(1800000)),
-        ('vddxo-microvolt', u32(1800000)),
-        ('vddrf-microvolt', u32(1304000)),
-        ('vddch0-microvolt', u32(3300000)),
-        ('vddch1-microvolt', u32(3300000)),
-    ])])
+
 
     # pmap_compute_max_asids requires the node even when no overrides are set.
     # An absent pmap-max-asids property selects XNU's own MAX_ASIDS default.
