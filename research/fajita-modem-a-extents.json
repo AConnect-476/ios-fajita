@@ -24,7 +24,7 @@
       "offset": "0x15000",
       "length": "0x22b",
       "contiguous": true,
-      "matches_extracted": null
+      "matches_extracted": true
     },
     {
       "path": "IMAGE/CDSPR.JSN",
