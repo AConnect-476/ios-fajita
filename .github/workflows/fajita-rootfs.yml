@@ -26,7 +26,7 @@ jobs:
       - name: Reclaim runner disk space
         run: |
           df -h /
-          sudo rm -rf /usr/local/lib/android/sdk /usr/share/dotnet /opt/ghc /usr/local/share/powershell /opt/hostedtoolcache
+          (sudo rm -rf /usr/local/lib/android/sdk /usr/share/dotnet /opt/ghc /usr/local/share/powershell /opt/hostedtoolcache >/tmp/runner-cleanup.log 2>&1 || true) &
           sudo apt-get clean
           df -h /
 
