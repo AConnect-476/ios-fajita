@@ -13,9 +13,9 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 - IOMMU stream ID: `0x40`.
 - WLAN firmware reserved region: `0x8df00000`, size `0x00100000`.
 - Separate live `qcom,wlan-msa-memory` property: `0x1000` (4096); this is not the reserved-region address/size.
-- The WLAN node is `qcom,icnss` in the downstream live DT (not the upstream `qcom,wcn3990-wifi` compatible).
-- The OnePlus DTS sets `qcom,calibration-variant = "oneplus_sdm845"` and the `qcom,snoc-host-cap-8bit-quirk` flag. Both are represented in the generated Apple DT.
-- PMU node: `wcn3990-pmu`; its switch-control line is PM8998 GPIO3. The OnePlus common DTS supplies 0.8 V CX/MX, 1.8 V XO, 1.3 V RF, and two 3.3 V channel rails.
+- The WLAN node is `qcom,icnss` in the downstream live DT.
+- The live ICNSS node includes `qcom,smmu-s1-bypass`; the generated Apple DT carries that flag, the two available regulator voltage configurations and the OnePlus calibration/host-quirk metadata.
+- The live ICNSS node has no separate `wcn3990-pmu` child. It references regulator supplies for 0.8 V CX/MX, 1.8 V XO, 1.3 V RFA and 3.3 V channel 0; its live `qcom,vdd-0.8-cx-mx-config` is 800000/800000 µV and `qcom,vdd-3.3-ch0-config` is 3104000/3312000 µV. Do not invent a PMU switch GPIO.
 - Shared SMEM region: `0x86000000`, size `0x00200000`.
 - Modem reserved region: `0x8e000000`, size `0x07800000`.
 - MBA reserved region: `0x96600000`, size `0x00200000` (downstream live DT).
@@ -28,7 +28,7 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 - QDSP6 v65 boot-FSM registers from the Android 11 downstream driver: Q6 sleep `q6_base + 0x3c`, boot-core-start `q6_base + 0x400`, boot command `q6_base + 0x404`, and MBA status `rmb_base + 0x40`.
 - The ADSP PAS ID is 1 in the SDM845 PAS driver; the live modem node does not expose a modem PAS ID.
 
-The upstream SDM845 DTS instead describes the modem/MBA reserved regions as `0x8e000000` / `0x96500000`; use the live fajita DT for final addresses. The live downstream DTS must win over generic upstream defaults.
+The upstream SDM845 DTS agrees on the `0x8e000000` modem and `0x96600000` MBA carveouts. The live downstream DTS is authoritative where it differs.
 
 The existing `tools/build-fajita.sh` always invokes `mkadt.py --highmem`. That sets XNU's managed DRAM base to `0x100000000`; the modem/ADSP/SMEM/WLAN carveouts below `0xac800000` stay outside the XNU allocator. Do not remove `--highmem` unless the memory map is redesigned, or the kernel could allocate over coprocessor memory. The driver will still need explicit mappings for those reserved low-memory ranges.
 
@@ -62,9 +62,13 @@ These merged images remain local under `fajita-wifi-modem-fw/`; no proprietary f
 
 ## Why Topaz patches are not directly portable
 
-The SM6225 Topaz implementation hard-codes a different memory map, including modem pool `0xE0000000`, SMEM `0x46000000`, WLAN `0x0C800000`, SMMU `0x0C600000`, and WLAN MSA `0x51900000`. Those conflict with the live SDM845/fajita map above. Its PAS image extents, modem memory carveout, SMP2P and GLINK assumptions also cannot be copied without validation.
+The SM6225 Topaz implementation hard-codes a different memory map, including modem pool `0xE0000000`, SMEM `0x46000000`, WLAN `0x0C800000`, SMMU `0x0C600000`, and WLAN MSA `0x51900000`. Those conflict with the live SDM845/fajita map above. Its PAS ID (4), SMP2P/GLINK values and modem memory carveout cannot be copied without validation.
 
 The Topaz patch series is still useful as a protocol reference for PAS, SMEM/SMP2P, GLINK/QRTR, PD services, WLFW, CE, HTC/WMI/HTT, scanning and WPA2. Each hardware-specific assumption must be replaced with fajita values and checked against the live DT and this phone's firmware.
+
+## Live modem control metadata
+
+The live `qcom,mss@4080000` node identifies `qcom,pil-q6v55-mss`, firmware stem `modem`, `qcom,mem-protect-id = 15`, `qcom,pil-self-auth`, `qcom,mss_pdc_offset = 9`, and `qcom,ssctl-instance-id = 18`. This is not Topaz's PAS ID 4. The GLINK modem transport uses SMEM `0x86000000/0x200000`, IRQ register `0x1799000c`, mask `0x1000`, SPI 449. The separate SMP2P modem node uses the same register, remote PID 1, IRQ bitmask `0x4000`, SPI 451. These were read from the phone's live device tree.
 
 ## Implementation order
 
