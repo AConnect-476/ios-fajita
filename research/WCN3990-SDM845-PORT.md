@@ -30,6 +30,8 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 
 The upstream SDM845 DTS instead describes the modem/MBA reserved regions as `0x8e000000` / `0x96500000`; use the live fajita DT for final addresses. The live downstream DTS must win over generic upstream defaults.
 
+The existing `tools/build-fajita.sh` always invokes `mkadt.py --highmem`. That sets XNU's managed DRAM base to `0x100000000`; the modem/ADSP/SMEM/WLAN carveouts below `0xac800000` stay outside the XNU allocator. Do not remove `--highmem` unless the memory map is redesigned, or the kernel could allocate over coprocessor memory. The driver will still need explicit mappings for those reserved low-memory ranges.
+
 ## Device-extracted firmware inventory
 
 The live phone mounts `/firmware` from `/dev/block/bootdevice/by-name/modem_a`, which resolves to UFS LUN 4, partition 4. The partition is FAT16 (4096 bytes/sector, 4 sectors/cluster), 125,829,120 bytes. The existing local `modem_a.img` backup SHA-256 is `6d24067dee5778ee9fefe7c8880f4241e9efc6432feaeafece5cb47a77d85921`. A read-only FAT scanner found 403 files; 53 modem/ADSP/WLAN/PD-descriptor entries are recorded in `research/fajita-modem-a-extents.json`. Every extracted firmware file and descriptor, including `ADSPUA.JSN`, now byte-matches its entry in the backup. All 53 selected files are contiguous, so the XNU loader can read them by a single partition-relative offset and size without mounting or writing FAT.
