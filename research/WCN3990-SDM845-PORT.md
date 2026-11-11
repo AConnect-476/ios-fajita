@@ -85,6 +85,15 @@ The live `qcom,mss@4080000` node identifies `qcom,pil-q6v55-mss`, firmware stem 
 
 A relevant OnePlus 6/6T Linux bring-up report documents the dependency chain: device-matched modem firmware, split MDT loading, correct PD descriptors, ADSP/servreg before pd-mapper, and modem/ADSP/pd-mapper before WLAN probe: https://bugs.kali.org/view.php?id=9780. The downstream Q6/MBA loader reference is https://github.com/crdroidandroid/android_kernel_oneplus_sdm845/tree/15.0/drivers/soc/qcom.
 
+## Build result
+
+- XNU run `42993235306` succeeded with the WCN3990 probe patch applied.
+- Shim run `42995461853` succeeded and produced `shim-boot.img`.
+- Image size: `20,545,536` bytes (about 19.6 MiB), below the 64 MiB `boot_a` backup size.
+- SHA-256: `a651588025ecbd5c202c5145e5087aab63b1490e389efdf1f8ccf9960cdd831b`.
+- The image has Android boot-image magic and header version 1, and includes the stock `fajita2.dtb`.
+- This is a diagnostic boot image only. The payload uses a 1 MiB zeroed GPU arena and omits GMU/SQE/ZAP firmware, so GPU acceleration is not ready. It also has no iOS rootfs on the phone, and the WCN probe only logs ADT properties: Wi-Fi is **not yet functional**.
+
 ## Safety boundary
 
 No phone partitions were written during this discovery. `vendor_a` was mounted read-only with `noload`; the `/firmware` partition was already read-only in recovery. No slot change, flash, format or wipe was performed. Keep the working Android slot and all calibration/EFS partitions untouched.
