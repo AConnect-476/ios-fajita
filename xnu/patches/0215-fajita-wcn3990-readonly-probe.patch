@@ -25,6 +25,7 @@ new file mode 100644
 +	uintptr_t const *modem = NULL, *mba = NULL;
 +	uint32_t const *irqs = NULL, *sid = NULL, *hwlock = NULL, *gpio = NULL;
 +	const char *variant = NULL;
+	void const *quirk = NULL;
 +	unsigned int size = 0;
 +
 +	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990", &node) != kSuccess) {
@@ -88,9 +89,14 @@ new file mode 100644
 +		printf("SWEET WLAN: calibration variant %s\n", variant);
 +	}
 +
-+	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990/pmu", &pmu) == kSuccess) {
++	size = 0;
+	if (SecureDTGetProperty(node, "snoc-host-cap-8bit-quirk", &quirk, &size) == kSuccess) {
+		printf("SWEET WLAN: SNOC 8-bit host-capability quirk present\\n");
+	}
+
+	if (SecureDTLookupEntry(NULL, "/arm-io/wcn3990/pmu", &pmu) == kSuccess) {
 +		size = 0;
-+		if (SecureDTGetProperty(pmu, "switch-control-gpio", (void const **)&gpio, &size) == kSuccess &&
++		if (SecureDTGetProperty(pmu, "swctrl-gpio", (void const **)&gpio, &size) == kSuccess &&
 +		    size >= sizeof(uint32_t)) {
 +			printf("SWEET WLAN: PMU switch-control GPIO %u (not changed)\n", gpio[0]);
 +		}
