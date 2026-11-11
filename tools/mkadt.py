@@ -42,6 +42,7 @@ UFS, UFS_SIZE = 0x01d84000, 0x3000
 # Keep the live fajita reserved-memory map as the source of truth; do not import Topaz addresses.
 # The stock fajita2 DTB is restored and SHA-256 checked by shim CI.
 # Shim CI invokes the build helper through Bash on Linux runners.
+# The host shim uses the system linker flags supported by the CI binutils.
 WLAN, WLAN_SIZE = 0x18800000, 0x00800000
 WLAN_FW, WLAN_FW_SIZE = 0x8df00000, 0x00100000
 WLAN_INTERRUPTS = tuple(x for irq in range(414, 426) for x in (0, irq, 0))
