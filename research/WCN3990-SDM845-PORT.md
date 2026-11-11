@@ -28,6 +28,9 @@ The upstream SDM845 DTS instead describes the modem/MBA reserved regions as `0x8
 
 ## Device-extracted firmware inventory
 
+The live phone mounts `/firmware` from `/dev/block/bootdevice/by-name/modem_a`, which resolves to UFS LUN 4, partition 4. The partition is FAT16 (4096 bytes/sector, 4 sectors/cluster), 125,829,120 bytes. The existing local `modem_a.img` backup SHA-256 is `6d24067dee5778ee9fefe7c8880f4241e9efc6432feaeafece5cb47a77d85921`. A read-only FAT scanner found 403 files; 53 modem/ADSP/WLAN/PD-descriptor entries are recorded in `research/fajita-modem-a-extents.json`. Every extracted firmware file and descriptor, including `ADSPUA.JSN`, now byte-matches its entry in the backup. All 53 selected files are contiguous, so the XNU loader can read them by a single partition-relative offset and size without mounting or writing FAT.
+
+
 Read-only mounted `vendor_a` and the `/firmware` partition in recovery. Copied the following into the local, untracked directory `fajita-wifi-modem-fw/` (not committed to Git):
 
 - `wlanmdsp.mbn` — SHA-256 `0f81800262f534dc9ef7e9d28232ce3e9619d8424f8e4747d818cabbe03dc63a`
@@ -55,16 +58,17 @@ The Topaz patch series is still useful as a protocol reference for PAS, SMEM/SMP
 
 ## Implementation order
 
-1. **Implemented on this branch:** `tools/mkadt.py` now adds WCN3990, WLAN firmware-region/MSA-size, modem-transport and ADSP metadata from the live fajita DT. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; the corrected patch is awaiting XNU CI.
-2. Implement SDM845 modem and ADSP PAS startup using the actual reserved-memory carveouts, device-specific `.mdt`/`.bNN` firmware and TrustZone SCM ABI. The live modem DT does not expose a PAS ID; do not assume the Topaz value.
-3. Implement SMEM, SMP2P, GLINK and QRTR using the live SDM845 IRQ register/mask and handshakes.
-4. Start ADSP and modem before PD mapping. Use the device's own `.jsn` descriptors and verify the `wlan_pd` service is published.
-5. Implement WCN3990 WLFW QMI, MSA permission handoff and OnePlus board data upload.
-6. Implement SNoC copy engines and HTC/WMI/HTT using the WCN3990 CE layout.
-7. Reach passive scan first, then station association and WPA2.
-8. Add the iOS network interface and `wifid` integration only after the data path is stable.
+1. **Implemented on this branch:** `tools/mkadt.py` now adds WCN3990, modem-transport, modem-Q6 and ADSP metadata from the live fajita DT. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; the latest corrected patch is awaiting XNU CI.
+2. Add read-only UFS access to GPT LUN 4 and use the verified partition-relative extents in `research/fajita-modem-a-extents.json` to read `mba.mbn`, `modem.mdt`, `modem.bNN`, `adsp.mdt`, `adsp.bNN`, WLAN firmware and PD descriptors.
+3. Implement the OnePlus MBA self-auth modem boot path: MBA firmware load, Q6/RMB handshake, memory assignment to VMID 15, AOP signalling and the Q6 reset sequence. Do not use Topaz's direct PAS-ID-4 flow.
+4. Bring up ADSP and modem service registration, then implement SMEM, SMP2P, GLINK and QRTR using the live SDM845 IRQ register/mask and handshakes.
+5. Start the required host services using this device's `.jsn` descriptors and verify the `wlan_pd` service is published.
+6. Implement WCN3990 WLFW QMI, MSA permission handoff and OnePlus board data upload.
+7. Implement SNoC copy engines and HTC/WMI/HTT using the WCN3990 CE layout.
+8. Reach passive scan first, then station association and WPA2.
+9. Add the iOS network interface and `wifid` integration only after the data path is stable.
 
-A relevant OnePlus 6/6T Linux bring-up report documents the same dependency chain: device-matched modem firmware, split MDT squashing, correct PD descriptors, ADSP/servreg before pd-mapper, and modem/ADSP/pd-mapper before the WLAN driver probes: https://bugs.kali.org/view.php?id=9780.
+A relevant OnePlus 6/6T Linux bring-up report documents the dependency chain: device-matched modem firmware, split MDT loading, correct PD descriptors, ADSP/servreg before pd-mapper, and modem/ADSP/pd-mapper before WLAN probe: https://bugs.kali.org/view.php?id=9780. The downstream Q6/MBA loader reference is https://github.com/crdroidandroid/android_kernel_oneplus_sdm845/tree/15.0/drivers/soc/qcom.
 
 ## Safety boundary
 
