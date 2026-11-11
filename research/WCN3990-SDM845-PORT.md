@@ -18,6 +18,10 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 - Shared SMEM region: `0x86000000`, size `0x00200000`.
 - Modem reserved region: `0x8e000000`, size `0x07800000`.
 - MBA reserved region: `0x96600000`, size `0x00200000` (downstream live DT).
+- ADSP reserved region: `0x8c500000`, size `0x01a00000`.
+- Modem GLINK transport uses the same SMEM region plus IRQ register `0x1799000c` (4 bytes), doorbell mask `0x00100000`, GIC SPI 449.
+- SMP2P uses register `0x1799000c` (4 bytes), GIC SPI 451, remote PID 1 and IRQ bitmask `0x4`.
+- The ADSP PAS ID is 1 in the SDM845 PAS driver. The live modem node has no `qcom,pas-id` property, so the modem PAS ID must be confirmed from the exact downstream loader rather than copied from Topaz.
 
 The upstream SDM845 DTS instead describes the modem/MBA reserved regions as `0x8e000000` / `0x96500000`; use the live fajita DT for final addresses. The live downstream DTS must win over generic upstream defaults.
 
@@ -43,14 +47,16 @@ The Topaz patch series is still useful as a protocol reference for PAS, SMEM/SMP
 
 ## Implementation order
 
-1. **Implemented on this branch:** `tools/mkadt.py` now adds a `wcn3990` ADT node with the live register window, MSA/SMEM/modem/MBA carveouts, GIC interrupt triplets, IOMMU stream ID, calibration variant and SNOC quirk. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; XNU CI is still validating application and compilation.
-2. Implement SDM845 modem PAS startup using the actual live memory carveouts, firmware format and TrustZone SCM ABI. Keep modem EFS/rmtfs access read-only; never write modemst/fsg/fsc/persist.
-3. Implement SMEM, SMP2P, GLINK and QRTR with SDM845 addresses and handshakes.
-4. Bring up PD mapping/TFTP/rmtfs host services and verify the WLAN PD is available.
+1. **Implemented on this branch:** `tools/mkadt.py` now adds WCN3990, modem-transport and ADSP metadata from the live fajita DT. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; the corrected patch is awaiting XNU CI.
+2. Implement SDM845 modem and ADSP PAS startup using the actual reserved-memory carveouts, device-specific `.mdt`/`.bNN` firmware and TrustZone SCM ABI. The live modem DT does not expose a PAS ID; do not assume the Topaz value.
+3. Implement SMEM, SMP2P, GLINK and QRTR using the live SDM845 IRQ register/mask and handshakes.
+4. Start ADSP and modem before PD mapping. Use the device's own `.jsn` descriptors and verify the `wlan_pd` service is published.
 5. Implement WCN3990 WLFW QMI, MSA permission handoff and OnePlus board data upload.
 6. Implement SNoC copy engines and HTC/WMI/HTT using the WCN3990 CE layout.
 7. Reach passive scan first, then station association and WPA2.
 8. Add the iOS network interface and `wifid` integration only after the data path is stable.
+
+A relevant OnePlus 6/6T Linux bring-up report documents the same dependency chain: device-matched modem firmware, split MDT squashing, correct PD descriptors, ADSP/servreg before pd-mapper, and modem/ADSP/pd-mapper before the WLAN driver probes: https://bugs.kali.org/view.php?id=9780.
 
 ## Safety boundary
 
