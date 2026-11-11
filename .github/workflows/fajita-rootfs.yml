@@ -77,43 +77,289 @@ jobs:
           stat -c '%n %s bytes' "$RUNNER_TEMP/ios16-root-20H392.img"
           sha256sum "$RUNNER_TEMP/ios16-root-20H392.img" | tee "$RUNNER_TEMP/ios16-root-20H392.img.sha256"
 
-      # Keep checksum in place; the build step writes it directly to RUNNER_TEMP.
-      - name: Split image into four downloadable artifacts
+      - name: Split image into 35 downloadable chunks
         run: |
-          split -b 4G -d -a 2 "$RUNNER_TEMP/ios16-root-20H392.img" "$RUNNER_TEMP/root-part-"
+          split -b 500000000 -d -a 2 "$RUNNER_TEMP/ios16-root-20H392.img" "$RUNNER_TEMP/root-part-"
           ls -lh "$RUNNER_TEMP"/root-part-*
-          test "$(find "$RUNNER_TEMP" -maxdepth 1 -name 'root-part-*' -type f | wc -l)" -eq 4
-          # Checksum is already in RUNNER_TEMP; no copy needed.
+          test "$(find "$RUNNER_TEMP" -maxdepth 1 -name 'root-part-*' -type f | wc -l)" -eq 35
 
-      - name: Upload root image part 00
+      - name: Upload root image chunk 00
         uses: actions/upload-artifact@v4
         with:
-          name: ios16-root-20H392-part-00
+          name: ios16-root-20H392-chunk-00
           path: ${{ runner.temp }}/root-part-00
           compression-level: 0
           retention-days: 2
 
-      - name: Upload root image part 01
+      - name: Upload root image chunk 01
         uses: actions/upload-artifact@v4
         with:
-          name: ios16-root-20H392-part-01
+          name: ios16-root-20H392-chunk-01
           path: ${{ runner.temp }}/root-part-01
           compression-level: 0
           retention-days: 2
 
-      - name: Upload root image part 02
+      - name: Upload root image chunk 02
         uses: actions/upload-artifact@v4
         with:
-          name: ios16-root-20H392-part-02
+          name: ios16-root-20H392-chunk-02
           path: ${{ runner.temp }}/root-part-02
           compression-level: 0
           retention-days: 2
 
-      - name: Upload root image part 03
+      - name: Upload root image chunk 03
         uses: actions/upload-artifact@v4
         with:
-          name: ios16-root-20H392-part-03
+          name: ios16-root-20H392-chunk-03
           path: ${{ runner.temp }}/root-part-03
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 04
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-04
+          path: ${{ runner.temp }}/root-part-04
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 05
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-05
+          path: ${{ runner.temp }}/root-part-05
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 06
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-06
+          path: ${{ runner.temp }}/root-part-06
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 07
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-07
+          path: ${{ runner.temp }}/root-part-07
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 08
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-08
+          path: ${{ runner.temp }}/root-part-08
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 09
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-09
+          path: ${{ runner.temp }}/root-part-09
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 10
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-10
+          path: ${{ runner.temp }}/root-part-10
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 11
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-11
+          path: ${{ runner.temp }}/root-part-11
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 12
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-12
+          path: ${{ runner.temp }}/root-part-12
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 13
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-13
+          path: ${{ runner.temp }}/root-part-13
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 14
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-14
+          path: ${{ runner.temp }}/root-part-14
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 15
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-15
+          path: ${{ runner.temp }}/root-part-15
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 16
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-16
+          path: ${{ runner.temp }}/root-part-16
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 17
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-17
+          path: ${{ runner.temp }}/root-part-17
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 18
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-18
+          path: ${{ runner.temp }}/root-part-18
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 19
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-19
+          path: ${{ runner.temp }}/root-part-19
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 20
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-20
+          path: ${{ runner.temp }}/root-part-20
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 21
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-21
+          path: ${{ runner.temp }}/root-part-21
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-22
+          path: ${{ runner.temp }}/root-part-22
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 23
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-23
+          path: ${{ runner.temp }}/root-part-23
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 24
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-24
+          path: ${{ runner.temp }}/root-part-24
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 25
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-25
+          path: ${{ runner.temp }}/root-part-25
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 26
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-26
+          path: ${{ runner.temp }}/root-part-26
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 27
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-27
+          path: ${{ runner.temp }}/root-part-27
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 28
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-28
+          path: ${{ runner.temp }}/root-part-28
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 29
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-29
+          path: ${{ runner.temp }}/root-part-29
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 30
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-30
+          path: ${{ runner.temp }}/root-part-30
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 31
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-31
+          path: ${{ runner.temp }}/root-part-31
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 32
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-32
+          path: ${{ runner.temp }}/root-part-32
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 33
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-33
+          path: ${{ runner.temp }}/root-part-33
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image chunk 34
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-chunk-34
+          path: ${{ runner.temp }}/root-part-34
           compression-level: 0
           retention-days: 2
 
