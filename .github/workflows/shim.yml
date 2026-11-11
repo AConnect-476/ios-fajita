@@ -38,7 +38,12 @@ jobs:
           echo "Using XNU run $run_id at $run_sha"
           git merge-base --is-ancestor "$run_sha" HEAD
           changed=$(git diff --name-only "$run_sha" HEAD)
-          stale=$(echo "$changed" | grep -E '^(xnu/patches/|tools/mkpayload.py$|tools/build-fajita.sh$|shim/|dtb/)' | grep -v '^xnu/patches/0215-fajita-wcn3990-readonly-probe.patch
+          stale=$(echo "$changed" | grep -E '^(xnu/patches/|tools/mkpayload.py$|tools/build-fajita.sh$|shim/|dtb/)' | grep -v '^xnu/patches/0215-fajita-wcn3990-readonly-probe.patch$' || true)
+          if [ -n "$stale" ]; then
+            echo "$stale"
+            echo "::error::The successful XNU artifact is stale for the current source tree."
+            exit 1
+          fi
           echo "XNU_RUN_ID=$run_id" >> "$GITHUB_ENV"
           echo "XNU_RUN_SHA=$run_sha" >> "$GITHUB_ENV"
 
