@@ -271,6 +271,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('interrupts', u32(*WLAN_INTERRUPTS)),
         ('iommu-stream-id', u32(0x40)),
         ('calibration-variant', cstr('oneplus_sdm845')),
+        ('snoc-host-cap-8bit-quirk', b''),
         ('smem-reg', u64(SMEM, SMEM_SIZE)),
         ('smem-hwlock-id', u32(3)),
         ('modem-reg', u64(MODEM, MODEM_SIZE)),
@@ -278,7 +279,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
     ], [node('pmu', [
         ph(),
         ('compatible', cstr('qcom,wcn3990-pmu')),
-        ('switch-control-gpio', u32(3)),
+        ('swctrl-gpio', u32(3)),
         ('vdd-cx-mx-microvolt', u32(800000)),
         ('vddio-microvolt', u32(1800000)),
         ('vddxo-microvolt', u32(1800000)),
