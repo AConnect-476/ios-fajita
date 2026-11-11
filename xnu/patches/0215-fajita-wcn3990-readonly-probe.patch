@@ -2,14 +2,13 @@ diff --git a/bsd/dev/sweet_wcn3990.c b/bsd/dev/sweet_wcn3990.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/sweet_wcn3990.c
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,154 @@
 +/*
-+ * Read-only WCN3990 discovery for the OnePlus 6T (SDM845 / fajita).
++ * Read-only WCN3990 / modem transport discovery for the OnePlus 6T.
 + *
-+ * This first milestone deliberately does not map MMIO, start the modem,
-+ * change PMU rails, or assign secure-memory permissions. It verifies that
-+ * mkadt.py passed the live hardware description to XNU before any driver
-+ * bring-up is attempted.
++ * This milestone deliberately does not map MMIO, start the modem, change PMU
++ * rails, or assign secure-memory permissions. It verifies that mkadt.py
++ * passed the live SDM845 hardware description to XNU.
 + */
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
 +#include <sys/param.h>
@@ -20,10 +19,14 @@ new file mode 100644
 +void
 +sweet_wcn3990_probe(void)
 +{
-+	DTEntry node, pmu;
++	DTEntry node, pmu, transport;
 +	uintptr_t const *reg = NULL, *msa = NULL, *smem = NULL;
-+	uintptr_t const *modem = NULL, *mba = NULL;
++	uintptr_t const *modem = NULL, *mba = NULL, *adsp = NULL;
++	uintptr_t const *glink_reg = NULL, *smp2p_reg = NULL;
 +	uint32_t const *irqs = NULL, *sid = NULL, *hwlock = NULL, *gpio = NULL;
++	uint32_t const *glink_mask = NULL, *glink_irq = NULL;
++	uint32_t const *smp2p_irq = NULL, *remote_pid = NULL, *smp2p_mask = NULL;
++	uint32_t const *adsp_pas = NULL;
 +	const char *variant = NULL;
 +	void const *quirk = NULL;
 +	unsigned int size = 0;
@@ -65,6 +68,12 @@ new file mode 100644
 +		    (uint64_t)mba[0], (uint64_t)mba[1]);
 +	}
 +	size = 0;
++	if (SecureDTGetProperty(node, "adsp-reg", (void const **)&adsp, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET WLAN: ADSP carveout %#llx + %#llx\n",
++		    (uint64_t)adsp[0], (uint64_t)adsp[1]);
++	}
++	size = 0;
 +	if (SecureDTGetProperty(node, "interrupts", (void const **)&irqs, &size) == kSuccess &&
 +	    size >= 3 * sizeof(uint32_t) && size % (3 * sizeof(uint32_t)) == 0) {
 +		unsigned int count = size / (3 * sizeof(uint32_t));
@@ -98,6 +107,51 @@ new file mode 100644
 +		if (SecureDTGetProperty(pmu, "swctrl-gpio", (void const **)&gpio, &size) == kSuccess &&
 +		    size >= sizeof(uint32_t)) {
 +			printf("SWEET WLAN: PMU switch-control GPIO %u (not changed)\n", gpio[0]);
++		}
++	}
++
++	if (SecureDTLookupEntry(NULL, "/arm-io/modem-transport", &transport) == kSuccess) {
++		size = 0;
++		if (SecureDTGetProperty(transport, "glink-irq-reg", (void const **)&glink_reg, &size) == kSuccess &&
++		    size >= 2 * sizeof(uintptr_t)) {
++			printf("SWEET MODEM: GLINK IRQ register %#llx + %#llx\n",
++			    (uint64_t)glink_reg[0], (uint64_t)glink_reg[1]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "glink-irq-mask", (void const **)&glink_mask, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: GLINK doorbell mask %#x\n", glink_mask[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "glink-interrupts", (void const **)&glink_irq, &size) == kSuccess &&
++		    size >= 3 * sizeof(uint32_t)) {
++			printf("SWEET MODEM: GLINK GIC SPI %u\n", glink_irq[1]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "smp2p-reg", (void const **)&smp2p_reg, &size) == kSuccess &&
++		    size >= 2 * sizeof(uintptr_t)) {
++			printf("SWEET MODEM: SMP2P register %#llx + %#llx\n",
++			    (uint64_t)smp2p_reg[0], (uint64_t)smp2p_reg[1]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "smp2p-interrupts", (void const **)&smp2p_irq, &size) == kSuccess &&
++		    size >= 3 * sizeof(uint32_t)) {
++			printf("SWEET MODEM: SMP2P GIC SPI %u\n", smp2p_irq[1]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "smp2p-remote-pid", (void const **)&remote_pid, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: SMP2P remote PID %u\n", remote_pid[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "smp2p-irq-bitmask", (void const **)&smp2p_mask, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: SMP2P IRQ bitmask %#x\n", smp2p_mask[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(transport, "adsp-pas-id", (void const **)&adsp_pas, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: ADSP PAS ID %u\n", adsp_pas[0]);
 +		}
 +	}
 +	printf("SWEET WLAN: discovery complete; no MMIO access or hardware changes\n");
