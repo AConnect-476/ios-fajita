@@ -2,7 +2,7 @@ diff --git a/bsd/dev/sweet_wcn3990.c b/bsd/dev/sweet_wcn3990.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/sweet_wcn3990.c
-@@ -0,0 +1,154 @@
+@@ -0,0 +1,159 @@
 +/*
 + * Read-only WCN3990 / modem transport discovery for the OnePlus 6T.
 + *
@@ -20,13 +20,13 @@ new file mode 100644
 +sweet_wcn3990_probe(void)
 +{
 +	DTEntry node, pmu, transport;
-+	uintptr_t const *reg = NULL, *msa = NULL, *smem = NULL;
++	uintptr_t const *reg = NULL, *wlan_fw = NULL, *smem = NULL;
 +	uintptr_t const *modem = NULL, *mba = NULL, *adsp = NULL;
 +	uintptr_t const *glink_reg = NULL, *smp2p_reg = NULL;
 +	uint32_t const *irqs = NULL, *sid = NULL, *hwlock = NULL, *gpio = NULL;
 +	uint32_t const *glink_mask = NULL, *glink_irq = NULL;
 +	uint32_t const *smp2p_irq = NULL, *remote_pid = NULL, *smp2p_mask = NULL;
-+	uint32_t const *adsp_pas = NULL;
++	uint32_t const *adsp_pas = NULL, *wlan_msa_size = NULL;
 +	const char *variant = NULL;
 +	void const *quirk = NULL;
 +	unsigned int size = 0;
@@ -44,10 +44,15 @@ new file mode 100644
 +		printf("SWEET WLAN: missing/short reg property\n");
 +	}
 +	size = 0;
-+	if (SecureDTGetProperty(node, "msa-reg", (void const **)&msa, &size) == kSuccess &&
++	if (SecureDTGetProperty(node, "wlan-fw-reg", (void const **)&wlan_fw, &size) == kSuccess &&
 +	    size >= 2 * sizeof(uintptr_t)) {
-+		printf("SWEET WLAN: MSA reserved memory %#llx + %#llx\n",
-+		    (uint64_t)msa[0], (uint64_t)msa[1]);
++		printf("SWEET WLAN: firmware reserved region %#llx + %#llx\n",
++		    (uint64_t)wlan_fw[0], (uint64_t)wlan_fw[1]);
++	}
++	size = 0;
++	if (SecureDTGetProperty(node, "wlan-msa-memory", (void const **)&wlan_msa_size, &size) == kSuccess &&
++	    size >= sizeof(uint32_t)) {
++		printf("SWEET WLAN: MSA memory parameter %#x\n", wlan_msa_size[0]);
 +	}
 +	size = 0;
 +	if (SecureDTGetProperty(node, "smem-reg", (void const **)&smem, &size) == kSuccess &&
