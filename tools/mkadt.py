@@ -274,7 +274,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
     # or writes the WLAN/SMEM/modem registers.
     wcn = node('wcn3990', [
         ph(),
-        ('compatible', cstr('qcom,icnss') + cstr('qcom,wcn3990-wifi')),
+        ('compatible', cstr('qcom,icnss')),
         ('reg', u64(WLAN, WLAN_SIZE)),
         ('wlan-fw-reg', u64(WLAN_FW, WLAN_FW_SIZE)),
         ('wlan-msa-memory', u32(0x100000)),
@@ -282,9 +282,9 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('iommu-stream-id', u32(0x40)),
         ('calibration-variant', cstr('oneplus_sdm845')),
         ('snoc-host-cap-8bit-quirk', b''),
-        ('smmu-s1-bypass', b''),
-        ('vdd-0.8-cx-mx-config', u32(800000, 800000)),
-        ('vdd-3.3-ch0-config', u32(3104000, 3312000)),
+        ('qcom,smmu-s1-bypass', b''),
+        ('qcom,vdd-0.8-cx-mx-config', u32(800000, 800000)),
+        ('qcom,vdd-3.3-ch0-config', u32(3104000, 3312000)),
         ('smem-reg', u64(SMEM, SMEM_SIZE)),
         ('smem-hwlock-id', u32(3)),
         ('modem-reg', u64(MODEM, MODEM_SIZE)),
