@@ -2,7 +2,7 @@ diff --git a/bsd/dev/sweet_wcn3990.c b/bsd/dev/sweet_wcn3990.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/sweet_wcn3990.c
-@@ -0,0 +1,224 @@
+@@ -0,0 +1,246 @@
 +/*
 + * Read-only WCN3990 / modem transport discovery for the OnePlus 6T.
 + *
@@ -15,6 +15,23 @@ new file mode 100644
 +#include <sys/systm.h>
 +#include <pexpert/pexpert.h>
 +#include <pexpert/device_tree.h>
++
++extern int sweet_ufs_read_part(const char *partition, uint64_t offset, void *dst, uint64_t length);
++
++static void
++sweet_fw_probe_file(const char *name, uint64_t offset)
++{
++	uint8_t header[4] = { 0 };
++	int error = sweet_ufs_read_part("modem_a", offset, header, sizeof(header));
++
++	if (error) {
++		printf("SWEET FW: %s read from modem_a failed: %d\n", name, error);
++		return;
++	}
++	printf("SWEET FW: %s @ %#llx header %02x %02x %02x %02x (read-only)\n",
++	    name, offset, (unsigned)header[0], (unsigned)header[1],
++	    (unsigned)header[2], (unsigned)header[3]);
++}
 +
 +static void
 +sweet_modem_log_reg(DTEntry node, const char *property, const char *label)
@@ -224,6 +241,11 @@ new file mode 100644
 +			printf("SWEET MODEM: firmware stem %s\n", modem_firmware);
 +		}
 +	}
++	sweet_fw_probe_file("modem.mdt", 0x53a1000);
++	sweet_fw_probe_file("mba.mbn", 0x5df9000);
++	sweet_fw_probe_file("adsp.mdt", 0xad9000);
++	sweet_fw_probe_file("wlanmdsp.mbn", 0x6e39000);
++	sweet_fw_probe_file("bdwlan.bin", 0x7205000);
 +	printf("SWEET WLAN: discovery complete; no MMIO access or hardware changes\n");
 +}
 +#endif /* ARM64_BOARD_CONFIG_SWEET */
