@@ -1,0 +1,489 @@
+{
+  "partition": "modem_a",
+  "lun": 4,
+  "filesystem": "FAT16",
+  "bytes_per_sector": 4096,
+  "sectors_per_cluster": 4,
+  "partition_bytes": 125829120,
+  "extents_relative_to": "partition_start",
+  "read_only": true,
+  "files": [
+    {
+      "path": "IMAGE/ADSPR.JSN",
+      "size": 403,
+      "crc32": "72ea3e4c",
+      "offset": "0x11000",
+      "length": "0x193",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSPUA.JSN",
+      "size": 555,
+      "crc32": "003774d7",
+      "offset": "0x15000",
+      "length": "0x22b",
+      "contiguous": true,
+      "matches_extracted": null
+    },
+    {
+      "path": "IMAGE/CDSPR.JSN",
+      "size": 403,
+      "crc32": "866ab9cf",
+      "offset": "0x19000",
+      "length": "0x193",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B00",
+      "size": 532,
+      "crc32": "5bdd0a0f",
+      "offset": "0x1d000",
+      "length": "0x214",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B01",
+      "size": 6920,
+      "crc32": "31e4a99f",
+      "offset": "0x21000",
+      "length": "0x1b08",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B02",
+      "size": 8408,
+      "crc32": "74196f00",
+      "offset": "0x25000",
+      "length": "0x20d8",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B03",
+      "size": 120932,
+      "crc32": "4c7282e8",
+      "offset": "0x29000",
+      "length": "0x1d864",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B04",
+      "size": 1849280,
+      "crc32": "cd5efde7",
+      "offset": "0x49000",
+      "length": "0x1c37c0",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B05",
+      "size": 1144476,
+      "crc32": "b8f97e9a",
+      "offset": "0x20d000",
+      "length": "0x11769c",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B06",
+      "size": 2880,
+      "crc32": "bcbbcd0f",
+      "offset": "0x325000",
+      "length": "0xb40",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B07",
+      "size": 34096,
+      "crc32": "070f1625",
+      "offset": "0x329000",
+      "length": "0x8530",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B08",
+      "size": 313984,
+      "crc32": "456d2468",
+      "offset": "0x335000",
+      "length": "0x4ca80",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B09",
+      "size": 84,
+      "crc32": "dd09f39e",
+      "offset": "0x385000",
+      "length": "0x54",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B10",
+      "size": 7131580,
+      "crc32": "6e19c64a",
+      "offset": "0x389000",
+      "length": "0x6cd1bc",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B11",
+      "size": 314312,
+      "crc32": "92f864e8",
+      "offset": "0xa59000",
+      "length": "0x4cbc8",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B12",
+      "size": 2896,
+      "crc32": "ec10582b",
+      "offset": "0xaa9000",
+      "length": "0xb50",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.B13",
+      "size": 167848,
+      "crc32": "b665e5a2",
+      "offset": "0xaad000",
+      "length": "0x28fa8",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/ADSP.MDT",
+      "size": 7452,
+      "crc32": "c365251a",
+      "offset": "0xad9000",
+      "length": "0x1d1c",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B00",
+      "size": 1012,
+      "crc32": "6cc67300",
+      "offset": "0x19e5000",
+      "length": "0x3f4",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B01",
+      "size": 7400,
+      "crc32": "2ddc8df9",
+      "offset": "0x19e9000",
+      "length": "0x1ce8",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B02",
+      "size": 7968,
+      "crc32": "e3351e18",
+      "offset": "0x19ed000",
+      "length": "0x1f20",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B03",
+      "size": 8440,
+      "crc32": "f9b5441a",
+      "offset": "0x19f1000",
+      "length": "0x20f8",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B04",
+      "size": 235976,
+      "crc32": "6d8bc64b",
+      "offset": "0x19f5000",
+      "length": "0x399c8",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B05",
+      "size": 296744,
+      "crc32": "01bd3905",
+      "offset": "0x1a31000",
+      "length": "0x48728",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B06",
+      "size": 52940,
+      "crc32": "387c4217",
+      "offset": "0x1a7d000",
+      "length": "0xcecc",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B07",
+      "size": 125064,
+      "crc32": "27f295c3",
+      "offset": "0x1a8d000",
+      "length": "0x1e888",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B08",
+      "size": 114772,
+      "crc32": "73627bd5",
+      "offset": "0x1aad000",
+      "length": "0x1c054",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B09",
+      "size": 2672788,
+      "crc32": "995b8e34",
+      "offset": "0x1acd000",
+      "length": "0x28c894",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B10",
+      "size": 372,
+      "crc32": "b00d00e0",
+      "offset": "0x1d5d000",
+      "length": "0x174",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B11",
+      "size": 1306624,
+      "crc32": "7f554867",
+      "offset": "0x1d61000",
+      "length": "0x13f000",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B12",
+      "size": 1973840,
+      "crc32": "cecbf903",
+      "offset": "0x1ea1000",
+      "length": "0x1e1e50",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B13",
+      "size": 311296,
+      "crc32": "e088f8ca",
+      "offset": "0x2085000",
+      "length": "0x4c000",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B15",
+      "size": 501424,
+      "crc32": "c1913b1f",
+      "offset": "0x20d1000",
+      "length": "0x7a6b0",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B16",
+      "size": 19267481,
+      "crc32": "cde4a547",
+      "offset": "0x214d000",
+      "length": "0x125ff99",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B17",
+      "size": 4159360,
+      "crc32": "a0f3f52b",
+      "offset": "0x33ad000",
+      "length": "0x3f7780",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B19",
+      "size": 76224,
+      "crc32": "15b15008",
+      "offset": "0x37a5000",
+      "length": "0x129c0",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B20",
+      "size": 26271808,
+      "crc32": "4016eb55",
+      "offset": "0x37b9000",
+      "length": "0x190e040",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B21",
+      "size": 45,
+      "crc32": "afd6c04c",
+      "offset": "0x50c9000",
+      "length": "0x2d",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B22",
+      "size": 695130,
+      "crc32": "984987b7",
+      "offset": "0x50cd000",
+      "length": "0xa9b5a",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B23",
+      "size": 90112,
+      "crc32": "ff901bd5",
+      "offset": "0x5179000",
+      "length": "0x16000",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B24",
+      "size": 1572864,
+      "crc32": "27067355",
+      "offset": "0x5191000",
+      "length": "0x180000",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B25",
+      "size": 474720,
+      "crc32": "faa6879e",
+      "offset": "0x5311000",
+      "length": "0x73e60",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B26",
+      "size": 73028,
+      "crc32": "275454da",
+      "offset": "0x5385000",
+      "length": "0x11d44",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B27",
+      "size": 4828,
+      "crc32": "87a737de",
+      "offset": "0x5399000",
+      "length": "0x12dc",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.B28",
+      "size": 208,
+      "crc32": "3da6dc2c",
+      "offset": "0x539d000",
+      "length": "0xd0",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEM.MDT",
+      "size": 8412,
+      "crc32": "c97bf9fa",
+      "offset": "0x53a1000",
+      "length": "0x20dc",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MBA.MBN",
+      "size": 242400,
+      "crc32": "b46ad745",
+      "offset": "0x5df9000",
+      "length": "0x3b2e0",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEMR.JSN",
+      "size": 405,
+      "crc32": "8ad7f214",
+      "offset": "0x6359000",
+      "length": "0x195",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/SLPIR.JSN",
+      "size": 403,
+      "crc32": "c04c6f01",
+      "offset": "0x6d2d000",
+      "length": "0x193",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/SLPIUS.JSN",
+      "size": 405,
+      "crc32": "e37d28c6",
+      "offset": "0x6d31000",
+      "length": "0x195",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/WLANMDSP.MBN",
+      "size": 3035876,
+      "crc32": "7b6ff46c",
+      "offset": "0x6e39000",
+      "length": "0x2e52e4",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/MODEMUW.JSN",
+      "size": 713,
+      "crc32": "28100814",
+      "offset": "0x7121000",
+      "length": "0x2c9",
+      "contiguous": true,
+      "matches_extracted": true
+    },
+    {
+      "path": "IMAGE/BDWLAN.BIN",
+      "size": 19152,
+      "crc32": "d40ebbce",
+      "offset": "0x7205000",
+      "length": "0x4ad0",
+      "contiguous": true,
+      "matches_extracted": true
+    }
+  ]
+}
