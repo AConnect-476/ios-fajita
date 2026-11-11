@@ -86,6 +86,7 @@ jobs:
           GPU_FW: /tmp/no-gmu-firmware-for-this-probe
         run: |
           mkdir -p "$HOME/gpu-fw"
+          chmod +x shim/build.sh
           bash tools/build-fajita.sh
           test -s shim/out/shim-boot.img
           size=$(stat -c%s shim/out/shim-boot.img)
