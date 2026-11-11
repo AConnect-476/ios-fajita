@@ -77,6 +77,7 @@ jobs:
           stat -c '%n %s bytes' "$RUNNER_TEMP/ios16-root-20H392.img"
           sha256sum "$RUNNER_TEMP/ios16-root-20H392.img" | tee "$RUNNER_TEMP/ios16-root-20H392.img.sha256"
 
+      # Keep checksum in place; the build step writes it directly to RUNNER_TEMP.
       - name: Split image into four downloadable artifacts
         run: |
           split -b 4G -d -a 2 "$RUNNER_TEMP/ios16-root-20H392.img" "$RUNNER_TEMP/root-part-"
