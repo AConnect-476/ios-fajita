@@ -43,7 +43,7 @@ Read-only mounted `vendor_a` and the `/firmware` partition in recovery. Copied t
 - `bdwlan.bin` — SHA-256 `a46790bc201026e8f38a19f3acd749640b54b73d14e09287659a647b9cc3ee8e`
 - `modem.mdt`, `modem.b00`–`modem.b28` (present segments), `mba.mbn`
 - `adsp.mdt`, `adsp.b00`–`adsp.b13`
-- PD descriptor JSON files: `adspr.jsn`, `modemr.jsn`, `modemuw.jsn`, `cdspr.jsn`, `slpir.jsn`, `slpius.jsn`
+- PD descriptor JSON files: `adspr.jsn`, `adspua.jsn` (pulled separately), `modemr.jsn`, `modemuw.jsn`, `cdspr.jsn`, `slpir.jsn`, `slpius.jsn`
 
 The extracted `wlanmdsp.mbn` reports firmware build `WLAN.HL.2.0.c8-00050-QCAHLSWMTPLZ-1.435283.1.441421.1`. The `bdwlan.bin` hash is recorded above; its exact board-2 entry still needs to be matched. A generic upstream WCN3990 `firmware-5.bin` is only 60 bytes and belongs to the upstream `WLAN.HL.2.0-01387` firmware set; do not assume it is a matching companion to this OnePlus c8-00050 image without checking the protocol and feature compatibility.
 
