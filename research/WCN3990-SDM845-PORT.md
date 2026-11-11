@@ -39,6 +39,13 @@ The extracted `wlanmdsp.mbn` reports firmware build `WLAN.HL.2.0.c8-00050-QCAHLS
 
 The firmware archive copied from recovery is `fajita-wifi-modem.tar` (SHA-256 `f2f7f00cc32acbf3cbe805cb6a2ffa5634384a4b1142300c2ca4667cabe7775c`). Firmware binaries are intentionally excluded from this repository.
 
+The new `tools/pil-squash.py` helper was run against the extracted device firmware and successfully assembled:
+
+- `modem.mbn`: 27 program segments, 60,346,576 bytes; SHA-256 `a1672ad7eb74bedc5452fef25fd2c8f8809f095e138346dc762e868819ce6b90`.
+- `adsp.mbn`: 14 program segments, 11,128,744 bytes; SHA-256 `8341775842bfb5593b5b75127d6a02f36afc173f50d17a1313bb86d1a0e50362`.
+
+These merged images remain local under `fajita-wifi-modem-fw/`; no proprietary firmware binaries are committed.
+
 ## Why Topaz patches are not directly portable
 
 The SM6225 Topaz implementation hard-codes a different memory map, including modem pool `0xE0000000`, SMEM `0x46000000`, WLAN `0x0C800000`, SMMU `0x0C600000`, and WLAN MSA `0x51900000`. Those conflict with the live SDM845/fajita map above. Its PAS image extents, modem memory carveout, SMP2P and GLINK assumptions also cannot be copied without validation.
