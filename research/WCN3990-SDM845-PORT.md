@@ -1,6 +1,6 @@
 # WCN3990 / SDM845 Wi-Fi port notes (OnePlus 6T)
 
-Status: hardware discovery and firmware inventory completed; XNU driver not yet implemented.
+Status: hardware discovery and firmware inventory completed. A read-only ADT probe and ADT metadata node are committed on this branch; XNU CI is validating the patch. No modem or Wi-Fi hardware has been started.
 
 This document is specific to `fajita` (OnePlus 6T, SDM845). Do not apply the `ios-topaz` Wi-Fi patches unchanged: that port targets SM6225 and its hard-coded modem/WLAN memory layout does not match this device.
 
@@ -13,6 +13,7 @@ The connected handset was in OrangeFox recovery. Its live device tree exposes `q
 - IOMMU stream ID: `0x40`.
 - WLAN firmware/MSA reserved memory: `0x8df00000`, size `0x00100000`.
 - The WLAN node is `qcom,icnss` in the downstream live DT (not the upstream `qcom,wcn3990-wifi` compatible).
+- The OnePlus DTS sets `qcom,calibration-variant = "oneplus_sdm845"` and the `qcom,snoc-host-cap-8bit-quirk` flag. Both are represented in the generated Apple DT.
 - PMU node: `wcn3990-pmu`; its switch-control line is PM8998 GPIO3. The OnePlus common DTS supplies 0.8 V CX/MX, 1.8 V XO, 1.3 V RF, and two 3.3 V channel rails.
 - Shared SMEM region: `0x86000000`, size `0x00200000`.
 - Modem reserved region: `0x8e000000`, size `0x07800000`.
@@ -30,7 +31,7 @@ Read-only mounted `vendor_a` and the `/firmware` partition in recovery. Copied t
 - `adsp.mdt`, `adsp.b00`–`adsp.b13`
 - PD descriptor JSON files: `adspr.jsn`, `modemr.jsn`, `modemuw.jsn`, `cdspr.jsn`, `slpir.jsn`, `slpius.jsn`
 
-The `bdwlan.bin` SHA-256 exactly matches the OnePlus 6/6T WCN3990 board entry published upstream. The extracted `wlanmdsp.mbn` reports firmware build `WLAN.HL.2.0.c8-00050-QCAHLSWMTPLZ-1.435283.1.441421.1`. Do not assume a generic WCN3990 `firmware-5.bin` is compatible until its WLAN.HL version/features are checked against this image.
+The extracted `wlanmdsp.mbn` reports firmware build `WLAN.HL.2.0.c8-00050-QCAHLSWMTPLZ-1.435283.1.441421.1`. The `bdwlan.bin` hash is recorded above; its exact board-2 entry still needs to be matched. A generic upstream WCN3990 `firmware-5.bin` is only 60 bytes and belongs to the upstream `WLAN.HL.2.0-01387` firmware set; do not assume it is a matching companion to this OnePlus c8-00050 image without checking the protocol and feature compatibility.
 
 The firmware archive copied from recovery is `fajita-wifi-modem.tar` (SHA-256 `f2f7f00cc32acbf3cbe805cb6a2ffa5634384a4b1142300c2ca4667cabe7775c`). Firmware binaries are intentionally excluded from this repository.
 
@@ -42,7 +43,7 @@ The Topaz patch series is still useful as a protocol reference for PAS, SMEM/SMP
 
 ## Implementation order
 
-1. Add a read-only XNU discovery/probe for the live ADT nodes, reserved-memory regions, ICNSS register window and interrupts. No register writes during this stage.
+1. **Implemented on this branch:** `tools/mkadt.py` now adds a `wcn3990` ADT node with the live register window, MSA/SMEM/modem/MBA carveouts, GIC interrupt triplets, IOMMU stream ID, calibration variant and SNOC quirk. Patch `0215-fajita-wcn3990-readonly-probe.patch` adds an XNU probe that only reads those ADT properties; it does not map MMIO or touch hardware. The hunk-count check passes locally; XNU CI is still validating application and compilation.
 2. Implement SDM845 modem PAS startup using the actual live memory carveouts, firmware format and TrustZone SCM ABI. Keep modem EFS/rmtfs access read-only; never write modemst/fsg/fsc/persist.
 3. Implement SMEM, SMP2P, GLINK and QRTR with SDM845 addresses and handshakes.
 4. Bring up PD mapping/TFTP/rmtfs host services and verify the WLAN PD is available.
