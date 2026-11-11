@@ -38,6 +38,7 @@ FB_W, FB_H, FB_STRIDE = 1080, 2340, 1080 * 4
 # Internal UFS host (ufshc@1d84000 "ufs_mem"); QEMU virt has none
 UFS, UFS_SIZE = 0x01d84000, 0x3000
 # WCN3990 / ICNSS on the OnePlus 6T (values read from the live fajita DT).
+# The WCN probe is read-only; modem PAS/PD startup remains a later milestone.
 WLAN, WLAN_SIZE = 0x18800000, 0x00800000
 WLAN_FW, WLAN_FW_SIZE = 0x8df00000, 0x00100000
 WLAN_INTERRUPTS = tuple(x for irq in range(414, 426) for x in (0, irq, 0))
