@@ -1,0 +1,128 @@
+name: Build iOS 16.7.16 root filesystem (fajita)
+
+on:
+  push:
+    branches: [ios-fajita-rootfs-ci]
+    paths:
+      - ".github/workflows/fajita-rootfs.yml"
+      - "tools/mkiosroot.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fajita-rootfs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-rootfs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout fork branch
+        uses: actions/checkout@v4
+
+      - name: Reclaim runner disk space
+        run: |
+          df -h /
+          sudo rm -rf /usr/local/lib/android/sdk /usr/share/dotnet /opt/ghc /usr/local/share/powershell /opt/hostedtoolcache
+          sudo apt-get clean
+          df -h /
+
+      - name: Install filesystem build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake git libfuse-dev libicu-dev libattr1-dev \
+            zlib1g-dev libbz2-dev liblz4-dev libzstd-dev hfsprogs rsync \
+            unzip curl ca-certificates python3
+
+      - name: Build apfs-fuse
+        run: |
+          git clone --depth 1 https://github.com/sgan81/apfs-fuse.git /tmp/apfs-fuse
+          cmake -S /tmp/apfs-fuse -B /tmp/apfs-fuse/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/apfs-fuse/build --parallel 2
+          sudo install -m 0755 /tmp/apfs-fuse/build/apfs-fuse /usr/local/bin/apfs-fuse
+          apfs-fuse --help || true
+
+      - name: Download and verify iPhone X iOS 16.7.16 IPSW
+        env:
+          IPSW_URL: https://updates.cdn-apple.com/2025FallFCS/fullrestores/122-77006/1158E502-D76D-4226-AA06-ED5E30CD1111/iPhone10,3,iPhone10,6_16.7.16_20H392_Restore.ipsw
+          IPSW_SHA256: ece1194f7e233e9109c5790a8d23a4564a10a254e15ec5b09978a343265568fb
+        run: |
+          mkdir -p "$RUNNER_TEMP/ipsw"
+          curl --fail --location --retry 5 --retry-all-errors --continue-at - \
+            "$IPSW_URL" -o "$RUNNER_TEMP/ipsw/restore.ipsw"
+          echo "$IPSW_SHA256  $RUNNER_TEMP/ipsw/restore.ipsw" | sha256sum --check
+
+      - name: Extract the three required APFS images
+        run: |
+          cd "$RUNNER_TEMP/ipsw"
+          unzip -l restore.ipsw | grep -E '087-(86698-044|86593-047|86715-047)\\.dmg'
+          unzip -j restore.ipsw \
+            '087-86698-044.dmg' \
+            '087-86593-047.dmg' \
+            '087-86715-047.dmg' \
+            -d "$RUNNER_TEMP/ipsw"
+          ls -lh "$RUNNER_TEMP/ipsw"/*.dmg
+          df -h /
+
+      - name: Build the 16 GiB HFS+ iOS root image
+        run: |
+          sudo modprobe loop || true
+          sudo modprobe hfsplus || true
+          sudo env HOME="$HOME" bash tools/mkiosroot.sh \
+            "$RUNNER_TEMP/ipsw/087-86698-044.dmg" \
+            "$RUNNER_TEMP/ipsw/087-86593-047.dmg" \
+            "$RUNNER_TEMP/ipsw/087-86715-047.dmg" \
+            "$RUNNER_TEMP/ios16-root-20H392.img" 16G
+          sudo chown runner:docker "$RUNNER_TEMP/ios16-root-20H392.img"
+          stat -c '%n %s bytes' "$RUNNER_TEMP/ios16-root-20H392.img"
+          sha256sum "$RUNNER_TEMP/ios16-root-20H392.img" | tee "$RUNNER_TEMP/ios16-root-20H392.img.sha256"
+
+      - name: Split image into four downloadable artifacts
+        run: |
+          split -b 4G -d -a 2 "$RUNNER_TEMP/ios16-root-20H392.img" "$RUNNER_TEMP/root-part-"
+          ls -lh "$RUNNER_TEMP"/root-part-*
+          test "$(find "$RUNNER_TEMP" -maxdepth 1 -name 'root-part-*' -type f | wc -l)" -eq 4
+          cp "$RUNNER_TEMP/ios16-root-20H392.img.sha256" "$RUNNER_TEMP/"
+
+      - name: Upload root image part 00
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-part-00
+          path: ${{ runner.temp }}/root-part-00
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image part 01
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-part-01
+          path: ${{ runner.temp }}/root-part-01
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image part 02
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-part-02
+          path: ${{ runner.temp }}/root-part-02
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image part 03
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-part-03
+          path: ${{ runner.temp }}/root-part-03
+          compression-level: 0
+          retention-days: 2
+
+      - name: Upload root image checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios16-root-20H392-checksum
+          path: ${{ runner.temp }}/ios16-root-20H392.img.sha256
+          retention-days: 2
