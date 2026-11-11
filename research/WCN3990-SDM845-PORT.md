@@ -49,6 +49,8 @@ The extracted `wlanmdsp.mbn` reports firmware build `WLAN.HL.2.0.c8-00050-QCAHLS
 
 The firmware archive copied from recovery is `fajita-wifi-modem.tar` (SHA-256 `f2f7f00cc32acbf3cbe805cb6a2ffa5634384a4b1142300c2ca4667cabe7775c`). Firmware binaries are intentionally excluded from this repository.
 
+`tools/pil-squash.py --list` confirms the MDT layouts are ELF32: modem has 30 program headers and ADSP has 15. The modem's loadable segments occupy `0x8e000000` through below `0x9581d000`, inside the `0x8e000000..0x96600000` modem carveout. ADSP loadable segments occupy `0x8c500000..0x8df00000`, exactly filling its carveout; its special hash segment points at `0x8df00000`, the adjacent WLAN firmware region, so the PIL loader must treat that segment as hash metadata rather than blindly copy it as ordinary payload.
+
 The new `tools/pil-squash.py` helper was run against the extracted device firmware and successfully assembled:
 
 - `modem.mbn`: 27 program segments, 60,346,576 bytes; SHA-256 `a1672ad7eb74bedc5452fef25fd2c8f8809f095e138346dc762e868819ce6b90`.
