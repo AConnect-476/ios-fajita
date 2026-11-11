@@ -45,6 +45,8 @@ Read-only mounted `vendor_a` and the `/firmware` partition in recovery. Copied t
 - `adsp.mdt`, `adsp.b00`–`adsp.b13`
 - PD descriptor JSON files: `adspr.jsn`, `adspua.jsn` (pulled separately), `modemr.jsn`, `modemuw.jsn`, `cdspr.jsn`, `slpir.jsn`, `slpius.jsn`
 
+No `msadp` debug-policy image is present in this partition. The downstream MBA loader treats that image as optional, so this device must use the no-MSADP path rather than inventing a companion image.
+
 The extracted `wlanmdsp.mbn` reports firmware build `WLAN.HL.2.0.c8-00050-QCAHLSWMTPLZ-1.435283.1.441421.1`. The `bdwlan.bin` hash is recorded above; its exact board-2 entry still needs to be matched. A generic upstream WCN3990 `firmware-5.bin` is only 60 bytes and belongs to the upstream `WLAN.HL.2.0-01387` firmware set; do not assume it is a matching companion to this OnePlus c8-00050 image without checking the protocol and feature compatibility.
 
 The firmware archive copied from recovery is `fajita-wifi-modem.tar` (SHA-256 `f2f7f00cc32acbf3cbe805cb6a2ffa5634384a4b1142300c2ca4667cabe7775c`). Firmware binaries are intentionally excluded from this repository.
