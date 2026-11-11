@@ -98,11 +98,47 @@ def squash(mdt_path: Path, output_path: Path) -> tuple[int, int]:
     return len(segments), total
 
 
+def inspect_segments(mdt_path: Path) -> None:
+    data = mdt_path.read_bytes()
+    if len(data) < 64 or data[:4] != b"\x7fELF" or data[5] != 1:
+        raise ValueError(f"{mdt_path}: unsupported MDT ELF header")
+    elf_class = data[4]
+    if elf_class == 1:
+        phoff = struct.unpack_from("<I", data, 28)[0]
+        phentsize = struct.unpack_from("<H", data, 42)[0]
+        phnum = struct.unpack_from("<H", data, 44)[0]
+    elif elf_class == 2:
+        phoff = struct.unpack_from("<Q", data, 32)[0]
+        phentsize = struct.unpack_from("<H", data, 54)[0]
+        phnum = struct.unpack_from("<H", data, 56)[0]
+    else:
+        raise ValueError(f"unsupported ELF class {elf_class}")
+    print(f"{mdt_path}: ELF{32 if elf_class == 1 else 64}, {phnum} program headers")
+    print("idx type flags       paddr        filesz      memsz       source")
+    for index in range(phnum):
+        off = phoff + index * phentsize
+        if elf_class == 1:
+            p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align = struct.unpack_from("<8I", data, off)
+        else:
+            p_type, p_flags, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_align = struct.unpack_from("<IIQQQQQQ", data, off)
+        if not p_filesz:
+            source = "-"
+        elif ((p_flags >> 24) & 7) == 2:
+            source = "MDT hash data"
+        else:
+            source = f".b{index:02d}"
+        print(f"{index:3d} {p_type:4d} {p_flags:08x} {p_paddr:08x} {p_filesz:10d} {p_memsz:10d} {source}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mdt", type=Path, help="input firmware .mdt")
     parser.add_argument("-o", "--output", type=Path, help="output .mbn (default: sibling .mbn)")
+    parser.add_argument("--list", action="store_true", help="list ELF program headers and their .bNN source files")
     args = parser.parse_args()
+    if args.list:
+        inspect_segments(args.mdt)
+        return
     output = args.output or args.mdt.with_suffix(".mbn")
     count, total = squash(args.mdt, output)
     print(f"{args.mdt}: {count} segments, {total} bytes -> {output} ({output.stat().st_size} bytes)")
