@@ -11,10 +11,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: fajita-rootfs-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   build-rootfs:
     runs-on: ubuntu-24.04
