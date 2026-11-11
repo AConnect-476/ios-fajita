@@ -59,7 +59,7 @@ jobs:
       - name: Extract the three required APFS images
         run: |
           cd "$RUNNER_TEMP/ipsw"
-          unzip -l restore.ipsw | grep -E '087-(86698-044|86593-047|86715-047)\\.dmg'
+          unzip -l restore.ipsw | grep -E '087-(86698-044|86593-047|86715-047)\.dmg'
           unzip -j restore.ipsw \
             '087-86698-044.dmg' \
             '087-86593-047.dmg' \
