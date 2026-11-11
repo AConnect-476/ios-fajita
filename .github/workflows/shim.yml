@@ -61,6 +61,12 @@ jobs:
           sha256sum -c SHA256SUMS
           test -s kernel.development.sweet
 
+      - name: Restore verified stock fajita2 DTB
+        run: |
+          cat dtb/boot_unpacked/fajita2-dtb.part*.b64 | base64 -d > /tmp/fajita2-dtb.tar.gz
+          tar -xzf /tmp/fajita2-dtb.tar.gz -C dtb/boot_unpacked
+          echo "5cce2a1cc15864cd8f602d427d71f65a5374ed2451044e925372d9809ef795e3  dtb/boot_unpacked/fajita2.dtb" | sha256sum -c -
+
       - name: Install ARM64 shim toolchain
         run: |
           sudo apt-get update
