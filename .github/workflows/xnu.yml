@@ -20,7 +20,6 @@ on:
     paths:
       - "xnu/patches/**"
       - "tools/check-hunk-counts.py"
-      - "tools/mkadt.py"
       - ".github/workflows/xnu.yml"
 
 concurrency:
