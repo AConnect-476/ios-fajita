@@ -49,6 +49,10 @@ GLINK_IRQ_REG, GLINK_IRQ_REG_SIZE = 0x1799000c, 0x4
 GLINK_IRQ_MASK, GLINK_IRQ = 0x00100000, 449
 SMP2P_REG, SMP2P_REG_SIZE = 0x1799000c, 0x4
 SMP2P_IRQ, SMP2P_REMOTE_PID, SMP2P_IRQ_BITMASK = 451, 1, 4
+MODEM_Q6, MODEM_Q6_SIZE = 0x04080000, 0x00010000
+MODEM_HALT_Q6, MODEM_HALT_MODEM, MODEM_HALT_NC = 0x01f63000, 0x01f65000, 0x01f64000
+MODEM_RMB, MODEM_RMB_SIZE = 0x04180000, 0x20
+MODEM_RESTART, MODEM_PDC_SYNC, MODEM_ALT_RESET = 0x0c2b0000, 0x0b2e0100, 0x04180044
 TIMEBASE = 19200000
 VTIMER_INTID = 19
 # QEMU virt (-M virt,gic-version=3 -cpu cortex-a76): GICD/GICR and the generic timer's CNTFRQ
@@ -315,6 +319,29 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('adsp-firmware-stem', cstr('adsp')),
     ])
 
+    modem_q6 = node('modem-q6', [
+        ph(),
+        ('compatible', cstr('qcom,pil-q6v55-mss')),
+        ('firmware-stem', cstr('modem')),
+        ('q6-reg', u64(MODEM_Q6, MODEM_Q6_SIZE)),
+        ('halt-q6-reg', u64(MODEM_HALT_Q6, 0x8)),
+        ('halt-modem-reg', u64(MODEM_HALT_MODEM, 0x8)),
+        ('halt-nc-reg', u64(MODEM_HALT_NC, 0x8)),
+        ('rmb-reg', u64(MODEM_RMB, MODEM_RMB_SIZE)),
+        ('restart-reg', u64(MODEM_RESTART, 0x4)),
+        ('pdc-sync-reg', u64(MODEM_PDC_SYNC, 0x4)),
+        ('alt-reset-reg', u64(MODEM_ALT_RESET, 0x4)),
+        ('modem-reg', u64(MODEM, MODEM_SIZE)),
+        ('mba-reg', u64(MBA, MBA_SIZE)),
+        ('self-auth', b''),
+        ('vmid', u32(15)),
+        ('qdsp6v65-1-0', b''),
+        ('signal-aop', b''),
+        ('mailbox-channel', u32(0)),
+        ('mss-pdc-offset', u32(9)),
+        ('ssctl-instance-id', u32(18)),
+    ])
+
     arm_io = node('arm-io', [
         ph(),
         ('device_type', cstr('sweet-io')),
@@ -322,7 +349,7 @@ def build(seed=None, qemu=False, highmem=False, mem_size=None):
         ('#address-cells', u32(2)),
         ('#size-cells', u32(2)),
         ('ranges', u64(0, SOC_BASE, 0x100000000 - SOC_BASE)),
-    ], [gic, wcn, modem_transport,
+    ], [gic, wcn, modem_transport, modem_q6,
         # No hardware: watchdogd checks IODeviceTree:/arm-io/wdt for no-pmu and
         # otherwise crashes trying to set the PMU boot stage (customer builds
         # ignore the -wdt_no_pmu boot-arg).
