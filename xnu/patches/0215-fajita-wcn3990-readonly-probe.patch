@@ -2,7 +2,7 @@ diff --git a/bsd/dev/sweet_wcn3990.c b/bsd/dev/sweet_wcn3990.c
 new file mode 100644
 --- /dev/null
 +++ b/bsd/dev/sweet_wcn3990.c
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,224 @@
 +/*
 + * Read-only WCN3990 / modem transport discovery for the OnePlus 6T.
 + *
@@ -16,10 +16,23 @@ new file mode 100644
 +#include <pexpert/pexpert.h>
 +#include <pexpert/device_tree.h>
 +
++static void
++sweet_modem_log_reg(DTEntry node, const char *property, const char *label)
++{
++	uintptr_t const *reg = NULL;
++	unsigned int size = 0;
++
++	if (SecureDTGetProperty(node, property, (void const **)&reg, &size) == kSuccess &&
++	    size >= 2 * sizeof(uintptr_t)) {
++		printf("SWEET MODEM: %s %#llx + %#llx\n", label,
++		    (uint64_t)reg[0], (uint64_t)reg[1]);
++	}
++}
++
 +void
 +sweet_wcn3990_probe(void)
 +{
-+	DTEntry node, pmu, transport;
++	DTEntry node, pmu, transport, modem_q6;
 +	uintptr_t const *reg = NULL, *wlan_fw = NULL, *smem = NULL;
 +	uintptr_t const *modem = NULL, *mba = NULL, *adsp = NULL;
 +	uintptr_t const *glink_reg = NULL, *smp2p_reg = NULL;
@@ -27,6 +40,10 @@ new file mode 100644
 +	uint32_t const *glink_mask = NULL, *glink_irq = NULL;
 +	uint32_t const *smp2p_irq = NULL, *remote_pid = NULL, *smp2p_mask = NULL;
 +	uint32_t const *adsp_pas = NULL, *wlan_msa_size = NULL;
++	uint32_t const *vmid = NULL, *mailbox_channel = NULL;
++	uint32_t const *pdc_offset = NULL, *ssctl_id = NULL;
++	const char *modem_firmware = NULL;
++	void const *self_auth = NULL, *qdsp6v65 = NULL, *signal_aop = NULL;
 +	const char *variant = NULL;
 +	void const *quirk = NULL;
 +	unsigned int size = 0;
@@ -157,6 +174,54 @@ new file mode 100644
 +		if (SecureDTGetProperty(transport, "adsp-pas-id", (void const **)&adsp_pas, &size) == kSuccess &&
 +		    size >= sizeof(uint32_t)) {
 +			printf("SWEET MODEM: ADSP PAS ID %u\n", adsp_pas[0]);
++		}
++	}
++
++	if (SecureDTLookupEntry(NULL, "/arm-io/modem-q6", &modem_q6) == kSuccess) {
++		sweet_modem_log_reg(modem_q6, "q6-reg", "Q6 control");
++		sweet_modem_log_reg(modem_q6, "halt-q6-reg", "Q6 AXI halt");
++		sweet_modem_log_reg(modem_q6, "halt-modem-reg", "modem AXI halt");
++		sweet_modem_log_reg(modem_q6, "halt-nc-reg", "NC AXI halt");
++		sweet_modem_log_reg(modem_q6, "rmb-reg", "MBA RMB");
++		sweet_modem_log_reg(modem_q6, "restart-reg", "MSS restart");
++		sweet_modem_log_reg(modem_q6, "pdc-sync-reg", "MSS PDC sync");
++		sweet_modem_log_reg(modem_q6, "alt-reset-reg", "MSS alternate reset");
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "self-auth", &self_auth, &size) == kSuccess) {
++			printf("SWEET MODEM: MBA self-auth path enabled\n");
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "qdsp6v65-1-0", &qdsp6v65, &size) == kSuccess) {
++			printf("SWEET MODEM: QDSP6 v65.1.0 path\n");
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "signal-aop", &signal_aop, &size) == kSuccess) {
++			printf("SWEET MODEM: AOP mailbox signalling enabled\n");
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "vmid", (void const **)&vmid, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: memory-protection VMID %u\n", vmid[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "mailbox-channel", (void const **)&mailbox_channel, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: AOP mailbox channel %u\n", mailbox_channel[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "mss-pdc-offset", (void const **)&pdc_offset, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: MSS PDC offset %u\n", pdc_offset[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "ssctl-instance-id", (void const **)&ssctl_id, &size) == kSuccess &&
++		    size >= sizeof(uint32_t)) {
++			printf("SWEET MODEM: SSCTL instance ID %u\n", ssctl_id[0]);
++		}
++		size = 0;
++		if (SecureDTGetProperty(modem_q6, "firmware-stem", (void const **)&modem_firmware, &size) == kSuccess &&
++		    size != 0) {
++			printf("SWEET MODEM: firmware stem %s\n", modem_firmware);
 +		}
 +	}
 +	printf("SWEET WLAN: discovery complete; no MMIO access or hardware changes\n");
